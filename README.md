@@ -29,7 +29,7 @@
 ## 🔧 사용된 기술 스택
 | 프론트엔드 | 백엔드 | 데이터베이스 | 지도 API |
 | :--------: | :-----: | :----------: | :------: |
-| React      | Node.js | PostgreSQL   | Google Maps API |
+| React      | Node.js | PostgreSQL   | Kakao Maps API |
 
 ---
 
