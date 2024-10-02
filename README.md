@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/React-18.0.0-blue.svg" alt="React">
   <img src="https://img.shields.io/badge/Node.js-16.0.0-green.svg" alt="Node.js">
   <img src="https://img.shields.io/badge/PostgreSQL-13.0.0-lightblue.svg" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/Google_Maps_API-Enabled-red.svg" alt="Google Maps API">
+  <img src="https://img.shields.io/badge/Google_Maps_API-Enabled-red.svg" alt="Kakao Maps API">
 </p>
 
 <p align="center">
