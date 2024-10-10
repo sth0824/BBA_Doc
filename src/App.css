@@ -1,38 +1,262 @@
-.App {
-  text-align: center;
+/* App.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --text-color: #333;
+    --bg-color: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+  background-color: var(--primary-color);
   color: white;
+  padding: 20px 0;
+  position: static; 
+  width: 100%;
+  z-index: 1000;
 }
 
-.App-link {
-  color: #61dafb;
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    text-align: center;
+    padding: 120px 0 80px;
+    margin-top: 80px; /* 헤더가 고정된 경우 여백 추가 */
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.search-input {
+    width: 50%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px 0 0 30px;
+}
+
+.search-btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-btn:hover {
+    background-color: #3CC8A8;
+}
+
+.section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 40px;
+}
+
+.hospitals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.hospital-card {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.hospital-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hospital-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.hospital-info {
+    padding: 20px;
+}
+
+.hospital-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hospital-details {
+    font-size: 14px;
+    color: #666;
+}
+
+.rating {
+    color: #FFD700;
+    margin-top: 10px;
+}
+
+.cta-section {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 60px 0;
+}
+
+.cta-btn {
+    display: inline-block;
+    background-color: white;
+    color: var(--primary-color);
+    padding: 15px 30px;
+    font-size: 18px;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.cta-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.modal {
+    display: flex;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .hero p {
+        font-size: 18px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .search-input,
+    .search-btn {
+        width: 100%;
+        border-radius: 30px;
+        margin-bottom: 10px;
+    }
 }
