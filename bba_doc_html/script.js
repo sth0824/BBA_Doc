@@ -75,19 +75,29 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 회원가입 폼 제출 시 처리
-    signupForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        if (email && password) {
-            localStorage.setItem("user-" + email, JSON.stringify({ email, password }));
-            alert("회원가입이 완료되었습니다. 로그인 해주세요.");
-            signupModal.style.display = "none";
-            loginModal.style.display = "block";
-        } else {
-            alert("이메일과 비밀번호를 입력해주세요.");
-        }
-    });
+signupForm.addEventListener("submit", function(e) {
+    e.preventDefault(); // 기본 폼 제출 방지
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+    const passwordConfirm = document.getElementById("signup-password-confirm").value;
+
+    // 비밀번호 일치 여부 확인
+    if (password !== passwordConfirm) {
+        alert("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+        return; // 비밀번호가 일치하지 않으면 회원가입 진행 중단
+    }
+
+    // 회원가입 처리 (로컬 스토리지에 저장 예시)
+    if (email && password) {
+        localStorage.setItem("user-" + email, JSON.stringify({ email, password }));
+        alert("회원가입이 완료되었습니다. 로그인 해주세요.");
+        signupModal.style.display = "none"; // 회원가입 모달 닫기
+        loginModal.style.display = "block"; // 로그인 모달 열기
+    } else {
+        alert("이메일과 비밀번호를 입력해주세요.");
+    }
+});
+
 
     // 로그아웃 처리
     logoutLink.addEventListener("click", function (e) {
@@ -113,6 +123,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // 사용자 위치를 지도 중심으로 설정
             map.setCenter(locPosition);
+            
+             // 현재 위치 마커 이미지 설정 (파란색 마커로 변경)
+            const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png'; // 파란색 별 모양 마커 이미지
+            const imageSize = new kakao.maps.Size(24, 35); // 마커 이미지의 크기
+            const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+            // 현재 위치에 마커 표시
+            const currentLocationMarker = new kakao.maps.Marker({
+                map: map,
+                position: locPosition,
+                image: markerImage // 이미지 적용
+            });
+
+            const currentLocationInfo = new kakao.maps.InfoWindow({
+                content: '<div style="padding:5px;">현재 위치</div>'
+            });
 
             // 병원 검색을 위한 카카오맵 서비스 객체 생성
             const ps = new kakao.maps.services.Places();
@@ -140,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // 병원 카드 HTML 추가
                     hospitalCard.innerHTML = `
-                        <img src="/api/placeholder/400/200" alt="${hospital.place_name}" class="hospital-image">
                         <div class="hospital-info">
                             <h3 class="hospital-name">${hospital.place_name}</h3>
                             <p class="hospital-details">${hospital.road_address_name || hospital.address_name}</p>
