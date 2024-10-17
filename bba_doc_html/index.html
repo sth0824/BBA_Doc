@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBADOC - 스마트한 병원 찾기</title>
-    <!-- 외부 CSS 파일 연결 -->
     <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0aa4cfc2bf90651f45f4870aeeacb99b&libraries=services"></script> <!-- 카카오맵 SDK -->
 </head>
 <body>
     <!-- 고정된 상단 네비게이션 바 -->
@@ -43,49 +43,62 @@
         </div>
     </section>
 
-    <!-- 추천 병원 목록 섹션 -->
     <section class="section" id="hospitals">
         <div class="container">
             <h2 class="section-title">추천 병원</h2>
-            <!-- 병원 카드 그리드 -->
-            <div class="hospitals-grid">
-                <!-- 첫 번째 병원 카드 -->
-                <div class="hospital-card" data-hospital="A 종합병원">
-                    <img src="/api/placeholder/400/200" alt="A 종합병원" class="hospital-image">
-                    <div class="hospital-info">
-                        <h3 class="hospital-name">A 종합병원</h3>
-                        <p class="hospital-details">내과 · 외과 · 소아과</p>
-                        <p class="hospital-details">서울시 강남구</p>
-                        <p class="hospital-details">현재 대기 시간: 약 30분</p>
-                        <div class="rating">★★★★☆ 4.5</div>
+            <!-- 슬라이더 버튼 -->
+            <div class="slider-container">
+                <button class="slider-btn prev-btn">＜</button> <!-- 이전 버튼 -->
+                <div class="hospitals-grid-wrapper">
+                    <div class="hospitals-grid">
+                        <!-- 병원 카드들 -->
+                        <div class="hospital-card" data-hospital="A 종합병원">
+                            <img src="/api/placeholder/400/200" alt="A 종합병원" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">A 종합병원</h3>
+                                <p class="hospital-details">내과 · 외과 · 소아과</p>
+                                <p class="hospital-details">서울시 강남구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 30분</p>
+                                <div class="rating">★★★★☆ 4.5</div>
+                            </div>
+                        </div>
+                        <!-- 두 번째 병원 카드 -->
+                        <div class="hospital-card" data-hospital="B 메디컬센터">
+                            <img src="/api/placeholder/400/200" alt="B 메디컬센터" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">B 메디컬센터</h3>
+                                <p class="hospital-details">정형외과 · 신경과</p>
+                                <p class="hospital-details">서울시 서초구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 15분</p>
+                                <div class="rating">★★★★☆ 4.2</div>
+                            </div>
+                        </div>
+                        <!-- 세 번째 병원 카드 -->
+                        <div class="hospital-card" data-hospital="C 어린이병원">
+                            <img src="/api/placeholder/400/200" alt="C 어린이병원" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">C 어린이병원</h3>
+                                <p class="hospital-details">소아과 · 소아정신과</p>
+                                <p class="hospital-details">서울시 송파구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 45분</p>
+                                <div class="rating">★★★★★ 4.8</div>
+                            </div>
+                        </div>
+                        <!-- 추가 병원 카드들 -->
                     </div>
                 </div>
-                <!-- 두 번째 병원 카드 -->
-                <div class="hospital-card" data-hospital="B 메디컬센터">
-                    <img src="/api/placeholder/400/200" alt="B 메디컬센터" class="hospital-image">
-                    <div class="hospital-info">
-                        <h3 class="hospital-name">B 메디컬센터</h3>
-                        <p class="hospital-details">정형외과 · 신경과</p>
-                        <p class="hospital-details">서울시 서초구</p>
-                        <p class="hospital-details">현재 대기 시간: 약 15분</p>
-                        <div class="rating">★★★★☆ 4.2</div>
-                    </div>
-                </div>
-                <!-- 세 번째 병원 카드 -->
-                <div class="hospital-card" data-hospital="C 어린이병원">
-                    <img src="/api/placeholder/400/200" alt="C 어린이병원" class="hospital-image">
-                    <div class="hospital-info">
-                        <h3 class="hospital-name">C 어린이병원</h3>
-                        <p class="hospital-details">소아과 · 소아정신과</p>
-                        <p class="hospital-details">서울시 송파구</p>
-                        <p class="hospital-details">현재 대기 시간: 약 45분</p>
-                        <div class="rating">★★★★★ 4.8</div>
-                    </div>
-                </div>
+                <button class="slider-btn next-btn">＞</button> <!-- 다음 버튼 -->
             </div>
         </div>
     </section>
-
+    
+    <!-- 병원 검색 지도 섹션 -->
+    <section class="section" id="map-section">
+        <div class="container">
+            <h2 class="section-title">내 위치 근처 병원</h2>
+            <div id="map" style="width:100%;height:400px;"></div> <!-- 카카오맵이 표시될 div -->
+        </div>
+    </section>
     <!-- Call-to-action 섹션 -->
     <section class="cta-section">
         <div class="container">

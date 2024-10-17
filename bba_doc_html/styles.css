@@ -362,3 +362,41 @@ input[type="password"]:focus {
         margin-bottom: 10px;
     }
 }
+/* 슬라이더 컨테이너 */
+.slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 병원 그리드 래퍼 */
+.hospitals-grid-wrapper {
+    overflow: hidden; /* 슬라이더 바깥으로 넘어가는 부분 숨김 */
+    width: 100%; /* 래퍼는 부모의 가로 폭을 가득 채움 */
+}
+.hospitals-grid {
+    display: flex;
+    transition: transform 0.5s ease-in-out; /* 슬라이더가 부드럽게 이동하도록 설정 */
+}
+
+/* 병원 카드 */
+.hospital-card {
+    min-width: calc(33.333% - 20px); /* 병원 카드는 한 줄에 3개 표시되도록 설정 */
+    margin-right: 20px;
+    flex-shrink: 0; /* 슬라이더 이동 시 카드 크기가 줄어들지 않도록 설정 */
+}
+
+/* 슬라이더 버튼 스타일 */
+.slider-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.slider-btn:hover {
+    background-color: var(--secondary-color);
+}
