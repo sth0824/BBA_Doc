@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBADOC - 스마트한 병원 찾기</title>
+    <!-- 외부 CSS 파일 연결 -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 고정된 상단 네비게이션 바 -->
+    <header>
+        <nav class="container">
+            <!-- 로고 -->
+            <div class="logo">BBADOC</div>
+            <!-- 네비게이션 링크 -->
+            <div class="nav-links">
+                <a href="#home">홈</a>
+                <a href="#search">검색</a>
+                <a href="#hospitals">병원 목록</a>
+                <div class="dropdown" id="user-dropdown">
+                    <!-- 로그인 링크 (로그인 시 사용자 이메일 앞부분 표시) -->
+                    <a href="#login" id="login-link">로그인</a>
+                    <!-- 로그아웃 메뉴 (드롭다운) -->
+                    <div class="dropdown-content" id="logout-menu">
+                        <a href="#" id="logout-link">로그아웃</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero 섹션: 페이지 첫 화면에 표시되는 주요 소개 -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>당신의 건강을 위한 최선의 선택</h1>
+            <p>증상에 맞는 최적의 병원을 빠르고 정확하게 찾아드립니다.</p>
+            <!-- 병원 검색 입력 및 버튼 -->
+            <div class="search-container" id="search">
+                <input type="text" class="search-input" placeholder="증상이나 진료과목을 입력하세요">
+                <button class="search-btn">검색</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 추천 병원 목록 섹션 -->
+    <section class="section" id="hospitals">
+        <div class="container">
+            <h2 class="section-title">추천 병원</h2>
+            <!-- 병원 카드 그리드 -->
+            <div class="hospitals-grid">
+                <!-- 첫 번째 병원 카드 -->
+                <div class="hospital-card" data-hospital="A 종합병원">
+                    <img src="/api/placeholder/400/200" alt="A 종합병원" class="hospital-image">
+                    <div class="hospital-info">
+                        <h3 class="hospital-name">A 종합병원</h3>
+                        <p class="hospital-details">내과 · 외과 · 소아과</p>
+                        <p class="hospital-details">서울시 강남구</p>
+                        <p class="hospital-details">현재 대기 시간: 약 30분</p>
+                        <div class="rating">★★★★☆ 4.5</div>
+                    </div>
+                </div>
+                <!-- 두 번째 병원 카드 -->
+                <div class="hospital-card" data-hospital="B 메디컬센터">
+                    <img src="/api/placeholder/400/200" alt="B 메디컬센터" class="hospital-image">
+                    <div class="hospital-info">
+                        <h3 class="hospital-name">B 메디컬센터</h3>
+                        <p class="hospital-details">정형외과 · 신경과</p>
+                        <p class="hospital-details">서울시 서초구</p>
+                        <p class="hospital-details">현재 대기 시간: 약 15분</p>
+                        <div class="rating">★★★★☆ 4.2</div>
+                    </div>
+                </div>
+                <!-- 세 번째 병원 카드 -->
+                <div class="hospital-card" data-hospital="C 어린이병원">
+                    <img src="/api/placeholder/400/200" alt="C 어린이병원" class="hospital-image">
+                    <div class="hospital-info">
+                        <h3 class="hospital-name">C 어린이병원</h3>
+                        <p class="hospital-details">소아과 · 소아정신과</p>
+                        <p class="hospital-details">서울시 송파구</p>
+                        <p class="hospital-details">현재 대기 시간: 약 45분</p>
+                        <div class="rating">★★★★★ 4.8</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call-to-action 섹션 -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>지금 바로 최적의 병원을 찾아보세요</h2>
+            <p>BBADOC와 함께 건강한 삶을 시작하세요</p>
+            <a href="#search" class="cta-btn">병원 찾기</a>
+        </div>
+    </section>
+
+    <!-- 하단 푸터 -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 BBADOC. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close close-login">&times;</span>
+            <h2 class="modal-title">로그인</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" name="email" required placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="btn">로그인</button>
+            </form>
+            <p>계정이 없으신가요? <a href="#" id="signup-link">회원가입</a></p>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close close-signup">&times;</span>
+            <h2 class="modal-title">회원가입</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signup-email">이메일</label>
+                    <input type="email" id="signup-email" name="email" required placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">비밀번호</label>
+                    <input type="password" id="signup-password" name="password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="btn">회원가입</button>
+            </form>
+            <p>계정이 있으신가요? <a href="#" id="login-link-from-signup">로그인</a></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

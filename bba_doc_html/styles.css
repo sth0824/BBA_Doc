@@ -1,0 +1,364 @@
+/* 구글 웹폰트 가져오기 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+/* 색상 및 글꼴 설정 */
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --text-color: #333;
+    --bg-color: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 기본 스타일 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 본문 스타일 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+/* 컨테이너 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 헤더 스타일 */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+/* Hero 섹션 스타일 */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    text-align: center;
+    padding: 120px 0 80px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+/* 검색 */
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.search-input {
+    width: 50%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px 0 0 30px;
+}
+
+.search-btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-btn:hover {
+    background-color: #3CC8A8;
+}
+
+/* 섹션 */
+.section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 40px;
+}
+
+/* 병원 카드 */
+.hospitals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.hospital-card {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.hospital-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hospital-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.hospital-info {
+    padding: 20px;
+}
+
+.hospital-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hospital-details {
+    font-size: 14px;
+    color: #666;
+}
+
+.rating {
+    color: #FFD700;
+    margin-top: 10px;
+}
+
+/* Call-to-action */
+.cta-section {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 60px 0;
+}
+
+.cta-btn {
+    display: inline-block;
+    background-color: white;
+    color: var(--primary-color);
+    padding: 15px 30px;
+    font-size: 18px;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.cta-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* 푸터 */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 15% auto;
+    padding: 20px;
+    border: none;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.close {
+    color: var(--text-color);
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--primary-color);
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+/* 폼 스타일 */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: var(--secondary-color);
+}
+
+#signup-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+#signup-link:hover {
+    text-decoration: underline;
+    color: var(--secondary-color);
+}
+
+/* 드롭다운 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: var(--card-bg);
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+.dropdown-content a {
+    color: var(--text-color);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: 500;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .hero p {
+        font-size: 18px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .search-input,
+    .search-btn {
+        width: 100%;
+        border-radius: 30px;
+        margin-bottom: 10px;
+    }
+}
