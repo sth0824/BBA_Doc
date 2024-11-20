@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBADOC - 스마트한 병원 찾기</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0aa4cfc2bf90651f45f4870aeeacb99b&libraries=services"></script>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header>
+        <nav class="container" style="display: flex; justify-content: space-between; align-items: center; height: 60px;">
+            <div class="logo" style="font-size: 24px; font-weight: bold; color: white;">BBADOC</div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 1px; height: 60px;">
+                <a href="#home" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; height: 60px; padding: 0 15px;">홈</a>
+                <a href="#search" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; height: 60px; padding: 0 15px;">검색</a>
+                <a href="#hospitals" style="display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; height: 60px; padding: 0 15px;">병원 목록</a>
+                <div class="dropdown" id="user-dropdown" style="display: flex; align-items: center; position: relative; height: 60px;">
+                    <a href="#" id="login-link" style="display: flex; align-items: center; gap: 8px; color: white; text-decoration: none; height: 60px; padding: 0 10px;">
+                        <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
+                            alt="카카오 로그인" 
+                            style="width: 20px; height: 20px; border-radius: 50%;">
+                        로그인
+                    </a>
+                    <div class="dropdown-content" id="logout-menu" style="display: none; position: absolute; right: 0; top: 60px; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 5px;">
+                        <span id="user-profile"></span>
+                        <a href="#" id="logout-link" style="display: block; padding: 10px 15px; text-decoration: none; color: black;">로그아웃</a>
+                    </div>
+                </div>
+            </div>
+        </nav>        
+    </header>
+
+    <!-- Hero 섹션 -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>당신의 건강을 위한 최선의 선택</h1>
+            <p>증상에 맞는 최적의 병원을 빠르고 정확하게 찾아드립니다.</p>
+            <div class="search-container" id="search">
+                <input type="text" class="search-input" placeholder="빠닥에게 물어보세요">
+                <button class="search-btn">전송</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 챗봇 섹션 -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <span class="chat-title">빠닥이와 대화하기</span>
+            <span class="connection-status" id="connection-status">연결 중...</span>
+            <button class="chat-toggle-btn" id="chat-toggle">−</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                <div class="message-content">
+                    안녕하세요! 저는 용인시 수지구의 의료 상담 도우미 빠닥이입니다. 
+                    증상이나 찾고 싶은 병원에 대해 물어보세요!
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." disabled>
+            <button id="chat-send" disabled>전송</button>
+            <div class="loading-indicator" id="loading-indicator" style="display: none;">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 병원 목록 섹션 -->
+    <section class="section" id="hospitals">
+        <div class="container">
+            <h2 class="section-title">추천 병원</h2>
+            <div class="slider-container">
+                <button class="slider-btn prev-btn">＜</button>
+                <div class="hospitals-grid-wrapper">
+                    <div class="hospitals-grid">
+                        <!-- 병원 카드들은 그대로 유지 -->
+                        <div class="hospital-card" data-hospital="A 종합병원">
+                            <img src="/api/placeholder/400/200" alt="A 종합병원" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">A 종합병원</h3>
+                                <p class="hospital-details">내과 · 외과 · 소아과</p>
+                                <p class="hospital-details">서울시 강남구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 30분</p>
+                                <div class="rating">★★★★☆ 4.5</div>
+                            </div>
+                        </div>
+                        <div class="hospital-card" data-hospital="B 메디컬센터">
+                            <img src="/api/placeholder/400/200" alt="B 메디컬센터" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">B 메디컬센터</h3>
+                                <p class="hospital-details">정형외과 · 신경과</p>
+                                <p class="hospital-details">서울시 서초구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 15분</p>
+                                <div class="rating">★★★★☆ 4.2</div>
+                            </div>
+                        </div>
+                        <div class="hospital-card" data-hospital="C 어린이병원">
+                            <img src="/api/placeholder/400/200" alt="C 어린이병원" class="hospital-image">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">C 어린이병원</h3>
+                                <p class="hospital-details">소아과 · 소아정신과</p>
+                                <p class="hospital-details">서울시 송파구</p>
+                                <p class="hospital-details">현재 대기 시간: 약 45분</p>
+                                <div class="rating">★★★★★ 4.8</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="slider-btn next-btn">＞</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 지도 섹션 -->
+    <section class="section" id="map-section">
+        <div class="container">
+            <h2 class="section-title">내 위치 근처 병원</h2>
+            <div id="map" style="width:100%;height:400px;"></div>
+        </div>
+    </section>
+
+    <!-- CTA 섹션 -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>지금 바로 최적의 병원을 찾아보세요</h2>
+            <p>BBADOC와 함께 건강한 삶을 시작하세요</p>
+            <a href="#search" class="cta-btn">병원 찾기</a>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 BBADOC. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 카카오 로그인 실패 모달 -->
+    <div id="loginErrorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="modal-title">로그인 오류</h2>
+            <p>카카오 로그인 중 문제가 발생했습니다. 다시 시도해 주세요.</p>
+            <button class="retry-btn">다시 시도</button>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

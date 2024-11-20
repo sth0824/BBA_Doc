@@ -1,0 +1,575 @@
+/* 구글 웹폰트 가져오기 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+/* 색상 및 글꼴 설정 */
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --kakao-color: #FEE500;
+    --text-color: #333;
+    --bg-color: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --chat-bg: #FFFFFF;
+    --chat-user: #007bff;
+    --chat-bot: #f0f0f0;
+}
+
+/* 기본 스타일 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 본문 스타일 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+/* 컨테이너 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 헤더 스타일 */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+/* 드롭다운 메뉴 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* 카카오 로그인 스타일 */
+#login-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: transparent;
+}
+
+#login-link img.kakao-login-image {
+    width: 20px;
+    height: 20px;
+}
+
+#login-link img.profile-img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: var(--card-bg);
+    min-width: 160px;
+    box-shadow: var(--shadow);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+.dropdown-content #user-profile {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.dropdown-content a {
+    color: var(--text-color) !important;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--secondary-color);
+    color: white !important;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* 챗봇 컨테이너 스타일 */
+.chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background-color: var(--chat-bg);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.chat-container.minimized {
+    height: 50px;
+}
+
+.chat-container.minimized .chat-messages,
+.chat-container.minimized .chat-input-container {
+    display: none;
+}
+
+/* 챗봇 헤더 */
+.chat-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-title {
+    font-weight: 500;
+}
+
+.connection-status {
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.chat-toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+/* 챗봇 메시지 영역 */
+.chat-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.message {
+    margin: 10px 0;
+    max-width: 80%;
+    clear: both;
+}
+
+.user-message {
+    float: right;
+}
+
+.bot-message {
+    float: left;
+}
+
+.message-content {
+    padding: 10px 15px;
+    border-radius: 15px;
+    display: inline-block;
+    word-wrap: break-word;
+}
+
+.user-message .message-content {
+    background-color: var(--chat-user);
+    color: white;
+}
+
+.bot-message .message-content {
+    background-color: var(--chat-bot);
+    color: var(--text-color);
+}
+
+/* 챗봇 입력 영역 */
+.chat-input-container {
+    padding: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    position: relative;
+}
+
+#chat-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+}
+
+#chat-input:focus {
+    border-color: var(--primary-color);
+}
+
+#chat-send {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#chat-send:hover {
+    background-color: var(--secondary-color);
+}
+
+#chat-send:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 로딩 인디케이터 */
+.loading-indicator {
+    position: absolute;
+    bottom: 60px;
+    left: 20px;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: var(--chat-bot);
+    border-radius: 10px;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    margin: 0 2px;
+    display: inline-block;
+    animation: bounce 1.3s linear infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
+
+/* Hero 섹션 스타일 */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    text-align: center;
+    padding: 120px 0 80px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+/* 검색 */
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.search-input {
+    width: 50%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px 0 0 30px;
+}
+
+.search-btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-btn:hover {
+    background-color: #3CC8A8;
+}
+
+/* 섹션 */
+.section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 40px;
+}
+
+/* 병원 카드 & 슬라이더 */
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.hospitals-grid-wrapper {
+    overflow: hidden;
+    width: 100%;
+}
+
+.hospitals-grid {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.hospital-card {
+    min-width: calc(33.333% - 20px);
+    margin-right: 20px;
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.hospital-card:hover {
+    transform: translateY(-5px);
+}
+
+.hospital-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.hospital-info {
+    padding: 20px;
+}
+
+.hospital-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hospital-details {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.rating {
+    color: #FFD700;
+    margin-top: 10px;
+}
+
+/* 슬라이더 버튼 */
+.slider-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.slider-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* CTA 섹션 */
+.cta-section {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 60px 0;
+}
+
+.cta-btn {
+    display: inline-block;
+    background-color: white;
+    color: var(--primary-color);
+    padding: 15px 30px;
+    font-size: 18px;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+}
+
+.cta-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* 푸터 */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* 에러 모달 */
+#loginErrorModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 15% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
+    position: relative;
+    text-align: center;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close:hover {
+    color: var(--text-color);
+}
+
+.retry-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.retry-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .nav-links {
+        padding: 0 10px;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .hero p {
+        font-size: 18px;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .search-input,
+    .search-btn {
+        width: 100%;
+        border-radius: 30px;
+        margin-bottom: 10px;
+    }
+
+    .chat-container {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+
+    .chat-container.minimized {
+        height: 50px;
+        width: auto;
+        right: 20px;
+        border-radius: 10px;
+    }
+
+    .hospital-card {
+        min-width: calc(100% - 20px);
+    }
+}
