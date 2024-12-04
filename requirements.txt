@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-dotenv
+requests
+colorama
+langchain
+langchain-upstage
+langchain-chroma
+langchain-core
+pydantic
+websockets
+jinja2
+chromadb
+pathlib
+starlette
