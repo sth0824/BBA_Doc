@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBADOC - 스마트한 병원 찾기</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_APP_KEY }}&libraries=services"></script>
-    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script async type="text/javascript" 
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_APP_KEY }}&libraries=services">
+    </script>
+    <script defer src="https://developers.kakao.com/sdk/js/kakao.js"></script>
     <script>
         Kakao.init('{{ KAKAO_APP_KEY }}');
     </script>
