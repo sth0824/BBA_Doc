@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // 카카오 초기화
-    Kakao.init('0aa4cfc2bf90651f45f4870aeeacb99b');
+    // Kakao 초기화 함수
+    function initializeKakao() {
+        if (!Kakao.isInitialized()) {
+            Kakao.init('{{ KAKAO_APP_KEY }}');
+        }
+    }
+
+    initializeKakao();
 
     // 기존 웹사이트 관련 변수들
     const loginLink = document.getElementById("login-link");
@@ -103,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 카카오 로그인 상태 확인 및 UI 업데이트 함수
+    // 카카오 로그인 상태 확인 및 UI 업이트 함수
     function updateLoginState() {
         if (Kakao.Auth.getAccessToken()) {
             Kakao.API.request({
@@ -132,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log('로그인 성공:', response);
                 },
                 fail: function(error) {
-                    console.error('카카오 프로필 조회 실패', error);
+                    console.error('카카오 프로필 조 실패', error);
                     handleLogout();
                 }
             });
@@ -162,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
             this.saveToStorage();
             this.updateFavoriteButtons();
             this.renderFavorites();
-            this.showToast('���겨찾기가 해제되었습니다.');
+            this.showToast('겨찾기가 해제되었습니다.');
         },
 
         saveToStorage() {
@@ -335,7 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (userInfo) {
             profileImage.src = userInfo.thumbnail_image || '/api/placeholder/150/150';
-            profileName.textContent = userInfo.nickname || '사용��';
+            profileName.textContent = userInfo.nickname || '사용';
             profileEmail.textContent = userInfo.email || '';
         } else {
             profileImage.src = '/api/placeholder/150/150';
@@ -522,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 카카오맵 ��기화
+    // 카카오맵 기화
     const mapContainer = document.getElementById("map");
     const options = {
         center: new kakao.maps.LatLng(33.450701, 126.570667),
@@ -554,7 +560,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병원 검색
+            // 주변 병 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -791,4 +797,18 @@ document.addEventListener("DOMContentLoaded", function () {
     getUserLocation().catch(error => {
         console.error('초기 위치 정보 가져오기 실패:', error);
     });
+
+    // 쿠키 설정 함수
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+    }
+
+    // 카카오 로그인 관련 설정
+    Kakao.Auth.setAccessToken(localStorage.getItem('kakao_access_token'));
 });
