@@ -22,6 +22,7 @@ from testhos import get_hospital_data
 from colorama import Fore, Style
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
+from pathlib import Path
 
 # Windows 환경에서 컬러 출력을 위한 초기화
 colorama.init()
@@ -44,19 +45,17 @@ def create_hospital_documents():
     return documents
 
 # 정적 파일 경로 설정
-static_path = pathlib.Path(__file__).parent / "static"
+static_path = Path(__file__).parent / "static"
+templates = Jinja2Templates(directory="static")
 
 # 정적 파일 마운트
 app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-
-templates = Jinja2Templates(directory="static")
 
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "KAKAO_APP_KEY": os.getenv("KAKAO_APP_KEY"),
-        "KAKAO_CLIENT_ID": os.getenv("KAKAO_CLIENT_ID")
+        "KAKAO_APP_KEY": os.getenv("KAKAO_APP_KEY")
     })
 
 def setup_qa_system():
@@ -79,7 +78,7 @@ def setup_qa_system():
        - 해당 동네(예: 죽전동, 상현동 등)의 관련 병원들 우선 추천
     
     3. 진료과 문의시:
-       - 해당 진료과의 병원들을 영업시간과 함께 추천
+       - 해당 진료과의 병원들을 영업시간과 함께 추��
     
     4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포함해주세요.
     
