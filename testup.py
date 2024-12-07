@@ -73,7 +73,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 ��용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -93,7 +93,7 @@ def setup_qa_system():
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
     
-    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포함해주세요.
+    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포��해주세요.
     
     5. 답변 형식:
        - 모든 답변은 한국어로 작성
@@ -190,7 +190,7 @@ async def kakao_login(token: KakaoToken):
         token_response = requests.post(token_url, data=data)
         access_token = token_response.json().get("access_token")
 
-        # 카카오 사용�� 정보 받기
+        # 카카오 사용자 정보 받기
         user_url = "https://kapi.kakao.com/v2/user/me"
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -249,8 +249,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 print(f"Received data: {data}")
                 
                 data_json = json.loads(data)
-                user_input = data_json.get("message")
                 
+                # Ping 메시지 처리 추가
+                if data_json.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                    continue
+                
+                user_input = data_json.get("message")
                 if not user_input:
                     continue
                     
@@ -269,11 +274,13 @@ async def websocket_endpoint(websocket: WebSocket):
             except Exception as e:
                 print(f"Error: {str(e)}")
                 await websocket.send_json({
-                    "error": "처리 중 오���가 발생했습니다."
+                    "error": "처리 중 오류가 발생했습니다."
                 })
                 
     except Exception as e:
         print(f"Connection error: {str(e)}")
+        if websocket.client_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
