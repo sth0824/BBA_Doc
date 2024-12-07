@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
             }).join('');
 
-            // 삭제 버튼에 이벤트 리스너 추가
+            // 삭제 버튼�� 이벤트 리스너 추가
             container.querySelectorAll('.remove-favorite').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -277,6 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         if (!Kakao.Auth.getAccessToken()) {
             Kakao.Auth.login({
+                redirectUri: 'https://bba-doc-1.onrender.com/oauth',
                 scope: 'profile_nickname, profile_image',
                 success: function(authObj) {
                     console.log('로그인 성공:', authObj);
@@ -733,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                         searchByDepartment(keyword);
                     } catch (error) {
-                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스�� 허용해주세요.');
+                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
                     }
                 }
             }
@@ -813,7 +814,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 카카오 로그인 관련 설정
     Kakao.Auth.setAccessToken(localStorage.getItem('kakao_access_token'));
 
-    // 카카오맵 ��기화 함수
+    // 카카오맵 기화 함수
     function initializeMap() {
         if (typeof kakao !== 'undefined' && kakao.maps) {
             const mapContainer = document.getElementById("map");
