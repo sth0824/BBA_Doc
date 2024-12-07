@@ -73,7 +73,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 ��을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -93,7 +93,7 @@ def setup_qa_system():
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
     
-    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포��해주세요.
+    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포해주세요.
     
     5. 답변 형식:
        - 모든 답변은 한국어로 작성
@@ -237,8 +237,12 @@ async def kakao_oauth(request: Request, code: str = None):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
+        print(f"\n[WebSocket] Connection attempt from {websocket.client.host}")
+        print(f"[WebSocket] Client headers: {websocket.headers}")
+        print(f"[WebSocket] Connection URL: {websocket.url}")
+        
         await websocket.accept()
-        print(f"WebSocket connected successfully for client {websocket.client.host}")
+        print(f"[WebSocket] Connection accepted for client {websocket.client.host}")
         
         rag_chain = create_rag_chain()
         chat_history = []
@@ -246,41 +250,52 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 data = await websocket.receive_text()
-                print(f"Received data: {data}")
+                print(f"\n[WebSocket] Received raw data: {data}")
                 
                 data_json = json.loads(data)
+                print(f"[WebSocket] Parsed JSON data: {data_json}")
                 
-                # Ping 메시지 처리 추가
+                # Ping 메시지 처리
                 if data_json.get("type") == "ping":
+                    print("[WebSocket] Received ping, sending pong")
                     await websocket.send_json({"type": "pong"})
                     continue
                 
                 user_input = data_json.get("message")
                 if not user_input:
+                    print("[WebSocket] Empty message received, skipping")
                     continue
-                    
+                
+                print(f"[WebSocket] Processing user input: {user_input}")
                 result = rag_chain.invoke({
                     "input": user_input,
                     "chat_history": chat_history
                 })
                 
+                print(f"[WebSocket] Generated response: {result['answer']}")
+                
                 await websocket.send_json({
                     "answer": result["answer"]
                 })
+                print("[WebSocket] Response sent successfully")
                 
-            except WebSocketDisconnect:
-                print(f"Client disconnected")
+            except WebSocketDisconnect as e:
+                print(f"\n[WebSocket] Client disconnected with code: {e.code}")
+                print(f"[WebSocket] Disconnect reason: {getattr(e, 'reason', 'No reason provided')}")
                 break
             except Exception as e:
-                print(f"Error: {str(e)}")
+                print(f"\n[WebSocket] Error during message processing: {str(e)}")
+                print(f"[WebSocket] Error type: {type(e).__name__}")
                 await websocket.send_json({
                     "error": "처리 중 오류가 발생했습니다."
                 })
                 
     except Exception as e:
-        print(f"Connection error: {str(e)}")
+        print(f"\n[WebSocket] Connection error: {str(e)}")
+        print(f"[WebSocket] Error type: {type(e).__name__}")
         if websocket.client_state != WebSocketState.DISCONNECTED:
-            await websocket.close()
+            print("[WebSocket] Closing connection due to error")
+            await websocket.close(code=1011)  # Internal error code
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
