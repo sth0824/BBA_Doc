@@ -22,6 +22,16 @@
             }
         });
     </script>
+    <script>
+        console.log("KAKAO_APP_KEY:", document.querySelector('meta[name="kakao-app-key"]').content);
+        window.addEventListener('load', function() {
+            if (!Kakao.isInitialized()) {
+                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+                console.log("Initializing Kakao with key:", kakaoAppKey);
+                Kakao.init(kakaoAppKey);
+            }
+        });
+    </script>
     
     <!-- 메인 스크립트는 가장 마지막에 로드 -->
     <script defer src="/static/js/script.js"></script>
