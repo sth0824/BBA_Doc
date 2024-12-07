@@ -410,22 +410,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // 웹소켓 연결 함수 수정
     function connectWebSocket() {
         console.log("Attempting to connect WebSocket...");
         
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+        console.log("WebSocket URL:", wsUrl);  // URL ��버깅용
         
         ws = new WebSocket(wsUrl);
+        console.log("WebSocket readyState:", ws.readyState);  // 연결 상태 디버깅용
 
         ws.onopen = function() {
             console.log("WebSocket Connected");
             reconnectAttempts = 0;
-            chatInput.disabled = false;
-            chatSendButton.disabled = false;
+            const chatInput = document.getElementById('chat-input');
+            const chatSend = document.getElementById('chat-send');
+            
+            if (chatInput) chatInput.disabled = false;
+            if (chatSend) chatSend.disabled = false;
+            
             updateConnectionStatus("연결됨", "#4CAF50");
             
-            // Ping 인터벌 설
+            // Ping 인터벌 설�
             pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: "ping" }));
@@ -434,6 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         ws.onmessage = function(event) {
+            console.log("Received message:", event.data);  // ��시지 수신 디버깅
             try {
                 const response = JSON.parse(event.data);
                 if (response.error) {
@@ -449,26 +457,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("Error parsing message:", error);
                 addMessage("메시지 처리 중 오류가 발생했습니다.", "error");
             }
-            loadingIndicator.style.display = "none";
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) loadingIndicator.style.display = "none";
         };
 
-        ws.onclose = function(event) {
-            console.log("WebSocket Disconnected", event);
-            chatInput.disabled = true;
-            chatSendButton.disabled = true;
-            updateConnectionStatus("연결 끊김", "#f44336");
-            
-            // Ping 인터벌 정
-            if (pingInterval) {
-                clearInterval(pingInterval);
-            }
-            
+        ws.onclose = function() {
+            console.log("WebSocket Disconnected");
             handleReconnect();
         };
 
         ws.onerror = function(error) {
             console.error("WebSocket Error:", error);
-            updateConnectionStatus("연결 오류", "#f44336");
+            updateConnectionStatus("연결 오류", "#FF0000");
         };
     }
 
