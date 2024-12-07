@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
             chatSendButton.disabled = false;
             updateConnectionStatus("연결됨", "#4CAF50");
             
-            // Ping 인터벌 설�
+            // Ping 인터벌 설
             pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: "ping" }));
@@ -438,16 +438,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 const response = JSON.parse(event.data);
                 if (response.error) {
                     console.error("Server error:", response.error);
-                    appendMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "error");
+                    addMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "error");
                 } else {
-                    appendMessage(response.answer, "bot");
+                    addMessage(response.answer, "bot");
                     if (response.context) {
                         console.log("Context:", response.context);
                     }
                 }
             } catch (error) {
                 console.error("Error parsing message:", error);
-                appendMessage("메시지 처리 중 오류가 발생했습니다.", "error");
+                addMessage("메시지 처리 중 오류가 발생했습니다.", "error");
             }
             loadingIndicator.style.display = "none";
         };
@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", function () {
             chatSendButton.disabled = true;
             updateConnectionStatus("연결 끊김", "#f44336");
             
-            // Ping 인터벌 정�
+            // Ping 인터벌 정
             if (pingInterval) {
                 clearInterval(pingInterval);
             }
