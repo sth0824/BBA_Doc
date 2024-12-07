@@ -398,8 +398,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let reconnectAttempts = 0;
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_DELAY = 3000;
+    const PING_INTERVAL = 30000; // 30초마다 ping
+    let pingInterval;
 
-    // 연결 상태 업��이트 함수 추가
+    // 연결 상태 업데이트 함수 추가
     function updateConnectionStatus(message, color) {
         const connectionStatus = document.getElementById('connection-status');
         if (connectionStatus) {
@@ -422,6 +424,13 @@ document.addEventListener("DOMContentLoaded", function () {
             chatInput.disabled = false;
             chatSendButton.disabled = false;
             updateConnectionStatus("연결됨", "#4CAF50");
+            
+            // Ping 인터벌 설�
+            pingInterval = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "ping" }));
+                }
+            }, PING_INTERVAL);
         };
 
         ws.onmessage = function(event) {
@@ -448,6 +457,12 @@ document.addEventListener("DOMContentLoaded", function () {
             chatInput.disabled = true;
             chatSendButton.disabled = true;
             updateConnectionStatus("연결 끊김", "#f44336");
+            
+            // Ping 인터벌 정�
+            if (pingInterval) {
+                clearInterval(pingInterval);
+            }
+            
             handleReconnect();
         };
 
@@ -466,11 +481,11 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             console.log("Max reconnection attempts reached");
             updateConnectionStatus("연결 실패", "#f44336");
-            appendMessage("서버와의 연�이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
+            appendMessage("서버와의 연결이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
         }
     }
 
-    // 페이지 로드시 WebSocket �결 시작
+    // 페이지 로드시 WebSocket 연결 시작
     window.addEventListener('load', connectWebSocket);
 
     // 채팅창 토글 기능
@@ -516,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병 검색
+            // 주변 병원 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
