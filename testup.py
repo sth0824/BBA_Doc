@@ -62,9 +62,11 @@ app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 @app.get("/")
 async def read_root(request: Request):
+    kakao_key = os.getenv("KAKAO_APP_KEY")
+    print(f"Using KAKAO_APP_KEY: {kakao_key}")
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "KAKAO_APP_KEY": os.getenv("KAKAO_APP_KEY")
+        "KAKAO_APP_KEY": kakao_key
     })
 
 def setup_qa_system():
@@ -84,7 +86,7 @@ def setup_qa_system():
        - 야간/공휴일인 경우 24시간 운영하는 병원 우선 추천
     
     2. 특정 지역 문의시:
-       - 해당 동네(예: 죽전동, 상현동 등)의 관련 병원들 우선 추천
+       - 해당 동네(예: 죽전동, 상현��� 등)의 관련 병원들 우선 추천
     
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
@@ -136,7 +138,7 @@ def create_rag_chain():
 def run_terminal_mode():
     print(f"{Fore.CYAN}=== 용인시 수지구 병원 정보 챗봇 ==={Style.RESET_ALL}")
     print(f"{Fore.GREEN}증상, 진료과목, 또는 원하시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
-    print(f"{Fore.GREEN}예시: '��가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}예시: '가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
     
     try:
         rag_chain = create_rag_chain()
