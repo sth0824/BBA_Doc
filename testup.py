@@ -40,7 +40,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
+    allow_websockets=True
 )
 
 # Kakao OAuth 설정
@@ -73,7 +74,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 ��용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -190,7 +191,7 @@ async def kakao_login(token: KakaoToken):
         token_response = requests.post(token_url, data=data)
         access_token = token_response.json().get("access_token")
 
-        # 카카오 사��자 정보 받기
+        # 카카오 사용자 정보 받기
         user_url = "https://kapi.kakao.com/v2/user/me"
         headers = {
             "Authorization": f"Bearer {access_token}",

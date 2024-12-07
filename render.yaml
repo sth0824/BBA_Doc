@@ -15,3 +15,13 @@ services:
         fromGroup: bbadoc-secrets
       - key: KAKAO_APP_KEY
         fromGroup: bbadoc-secrets
+         headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Upgrade
+        value: $http_upgrade
+      - path: /*
+        name: Connection
+        value: 'upgrade'
