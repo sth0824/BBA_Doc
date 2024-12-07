@@ -59,7 +59,6 @@ templates = Jinja2Templates(directory="static")
 
 # 정적 파일 마운트
 app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-app.mount("/favicon.ico", StaticFiles(directory=str(static_path / "favicon")), name="favicon")
 
 @app.get("/")
 async def read_root(request: Request):
@@ -137,7 +136,7 @@ def create_rag_chain():
 def run_terminal_mode():
     print(f"{Fore.CYAN}=== 용인시 수지구 병원 정보 챗봇 ==={Style.RESET_ALL}")
     print(f"{Fore.GREEN}증상, 진료과목, 또는 원하시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
-    print(f"{Fore.GREEN}예시: '배가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}예시: '��가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
     
     try:
         rag_chain = create_rag_chain()
