@@ -2,7 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Kakao 초기화 함수
     function initializeKakao() {
         if (!Kakao.isInitialized()) {
-            Kakao.init('{{ KAKAO_APP_KEY }}');
+            const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+            Kakao.init(kakaoAppKey);
         }
     }
 
@@ -172,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
 
         saveToStorage() {
-            CookieUtil.setCookie('favorites', this.favorites, 30); // 30일 유지
+            CookieUtil.setCookie('favorites', this.favorites, 30); // 30일 유���
         },
 
         updateFavoriteButtons() {
@@ -195,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="no-favorites">
                         아직 즐겨찾기한 병원이 없습니다.
                         <br>
-                        병원 카드의 하트 아이콘을 클릭하여 즐겨찾기에 추가해보세요!
+                        병원 카드의 하트 아이콘을 클클릭하여 즐겨찾기에 추가해보세요!
                     </div>`;
                 return;
             }
@@ -705,7 +706,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchBtn = document.querySelector('.search-btn');
 
     if (searchBtn && searchInput) {
-        // 검색 버튼 클릭 이벤트
+        // 검색 버튼 ���릭 이벤트
         searchBtn.addEventListener('click', async function() {
             const keyword = searchInput.value.trim();
             if (keyword) {
