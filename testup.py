@@ -208,7 +208,29 @@ async def kakao_login(token: KakaoToken):
         })
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+@app.get("/oauth")
+async def kakao_oauth(request: Request, code: str = None):
+    if code:
+        try:
+            # 액세스 토큰 요청
+            token_url = "https://kauth.kakao.com/oauth/token"
+            data = {
+                "grant_type": "authorization_code",
+                "client_id": os.getenv("KAKAO_CLIENT_ID"),
+                "redirect_uri": "https://bba-doc-1.onrender.com/oauth",
+                "code": code
+            }
+            token_response = requests.post(token_url, data=data)
+            token_data = token_response.json()
+            
+            # OAuth 콜백 페이지 렌더링
+            return templates.TemplateResponse("oauth_callback.html", {
+                "request": request,
+                "token": token_data.get("access_token")
+            })
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    return HTTPException(status_code=400, detail="Authorization code not provided")
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
