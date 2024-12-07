@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBADOC - 스마트한 병원 찾기</title>
     <link rel="stylesheet" href="/static/css/styles.css">
+    <meta name="kakao-app-key" content="{{ KAKAO_APP_KEY }}">
+    
+    <!-- 카카오 스크립트 로딩 순서 변경 -->
     <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script type="text/javascript" 
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_APP_KEY }}&libraries=services">
+    </script>
+    
+    <!-- 카카오 초기화 스크립트 -->
     <script>
         window.addEventListener('load', function() {
             if (!Kakao.isInitialized()) {
@@ -14,10 +22,9 @@
             }
         });
     </script>
-    <script async type="text/javascript" 
-        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_APP_KEY }}&libraries=services">
-    </script>
-    <meta name="kakao-app-key" content="{{ KAKAO_APP_KEY }}">
+    
+    <!-- 메인 스크립트는 가장 마지막에 로드 -->
+    <script defer src="/static/js/script.js"></script>
 </head>
 <body>
     <!-- 헤더 -->
@@ -225,7 +232,5 @@
             <button class="retry-btn">다시 시도</button>
         </div>
     </div>
-
-    <script src="/static/js/script.js"></script>
 </body>
 </html>
