@@ -23,6 +23,7 @@ from colorama import Fore, Style
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 # Windows 환경에서 컬러 출력을 위한 초기화
 colorama.init()
@@ -31,6 +32,14 @@ colorama.init()
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Kakao OAuth 설정
 KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
@@ -50,6 +59,7 @@ templates = Jinja2Templates(directory="static")
 
 # 정적 파일 마운트
 app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+app.mount("/favicon.ico", StaticFiles(directory=str(static_path / "favicon")), name="favicon")
 
 @app.get("/")
 async def read_root(request: Request):
@@ -78,7 +88,7 @@ def setup_qa_system():
        - 해당 동네(예: 죽전동, 상현동 등)의 관련 병원들 우선 추천
     
     3. 진료과 문의시:
-       - 해당 진료과의 병원들을 영업시간과 함께 추��
+       - 해당 진료과의 병원들을 영업시간과 함께 추천
     
     4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포함해주세요.
     

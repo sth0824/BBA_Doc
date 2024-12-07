@@ -13,3 +13,5 @@ services:
         fromGroup: bbadoc-secrets
       - key: KAKAO_REDIRECT_URI
         fromGroup: bbadoc-secrets
+      - key: KAKAO_APP_KEY
+        fromGroup: bbadoc-secrets
