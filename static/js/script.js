@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
 
         saveToStorage() {
-            CookieUtil.setCookie('favorites', this.favorites, 30); // 30일 유���
+            CookieUtil.setCookie('favorites', this.favorites, 30); // 30일 유효
         },
 
         updateFavoriteButtons() {
@@ -706,7 +706,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchBtn = document.querySelector('.search-btn');
 
     if (searchBtn && searchInput) {
-        // 검색 버튼 ���릭 이벤트
+        // 검색 버튼 클릭 이벤트
         searchBtn.addEventListener('click', async function() {
             const keyword = searchInput.value.trim();
             if (keyword) {
@@ -733,7 +733,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                         searchByDepartment(keyword);
                     } catch (error) {
-                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
+                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스�� 허용해주세요.');
                     }
                 }
             }
@@ -812,4 +812,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 카카오 로그인 관련 설정
     Kakao.Auth.setAccessToken(localStorage.getItem('kakao_access_token'));
+
+    // 카카오맵 ��기화 함수
+    function initializeMap() {
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            const mapContainer = document.getElementById("map");
+            const options = {
+                center: new kakao.maps.LatLng(33.450701, 126.570667),
+                level: 5,
+            };
+            const map = new kakao.maps.Map(mapContainer, options);
+            // 나머지 맵 관련 코드...
+        } else {
+            // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
+            setTimeout(initializeMap, 100);
+        }
+    }
+
+    // 맵 초기화 시작
+    initializeMap();
 });
