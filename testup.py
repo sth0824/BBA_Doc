@@ -73,7 +73,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 �� 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -93,7 +93,7 @@ def setup_qa_system():
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
     
-    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포해��세요.
+    4. 모든 추천시 병원명, 주소, 전화번호, 영업시간을 포해세요.
     
     5. 답변 형식:
        - 모든 답변은 한국어로 작성
@@ -162,7 +162,7 @@ def run_terminal_mode():
             print(result["answer"])
             
             if result.get("context"):
-                print(f"\n{Fore.MAGENTA}[참고 정보]{Style.RESET_ALL}")
+                print(f"\n{Fore.MAGENTA}[참고 ��보]{Style.RESET_ALL}")
                 for doc in result["context"]:
                     print(doc.page_content)
             
@@ -233,25 +233,32 @@ async def kakao_oauth(request: Request, code: str = None):
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     return HTTPException(status_code=400, detail="Authorization code not provided")
-# WebSocket 엔드포인트 수정
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
         print(f"\n[WebSocket] Connection attempt from {websocket.client.host}")
         print(f"[WebSocket] Client headers: {websocket.headers}")
         
-        # Render 프록시 관련 헤더 확인
         render_ttl = websocket.headers.get('render-proxy-ttl')
         render_id = websocket.headers.get('rndr-id')
         print(f"[WebSocket] Render TTL: {render_ttl}, Render ID: {render_id}")
         
-        await websocket.accept()
+        await websocket.accept(headers={
+            "Connection": "upgrade",
+            "Upgrade": "websocket",
+            "Sec-WebSocket-Protocol": "chat"
+        })
+        
         print(f"[WebSocket] Connection accepted for client {websocket.client.host}")
+        
+        await websocket.send_json({"type": "pong", "status": "connected"})
         
         rag_chain = create_rag_chain()
         chat_history = []
-        
-        # Keep-alive 메시지 처리를 위한 카운터
         keep_alive_counter = 0
         
         while True:
@@ -262,7 +269,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 data_json = json.loads(data)
                 print(f"[WebSocket] Parsed JSON data: {data_json}")
                 
-                # Ping 메시지 처리 개선
                 if data_json.get("type") == "ping":
                     keep_alive_counter += 1
                     print(f"[WebSocket] Received ping #{keep_alive_counter}, sending pong")
