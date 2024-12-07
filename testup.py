@@ -73,7 +73,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 내용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 ��용을 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -88,7 +88,7 @@ def setup_qa_system():
        - 야간/공휴일인 경우 24시간 운영하는 병원 우선 추천
     
     2. 특정 지역 문의시:
-       - 해당 동네(예: 죽전동, 상현��� 등)의 관련 병원들 우선 추천
+       - 해당 동네(예: 죽전동, 상현동 등)의 관련 병원들 우선 추천
     
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
@@ -190,7 +190,7 @@ async def kakao_login(token: KakaoToken):
         token_response = requests.post(token_url, data=data)
         access_token = token_response.json().get("access_token")
 
-        # 카카오 사용자 정보 받기
+        # 카카오 사용�� 정보 받기
         user_url = "https://kapi.kakao.com/v2/user/me"
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -237,9 +237,8 @@ async def kakao_oauth(request: Request, code: str = None):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
-        print("WebSocket connection attempt...")
         await websocket.accept()
-        print("WebSocket connected successfully")
+        print(f"WebSocket connected successfully for client {websocket.client.host}")
         
         rag_chain = create_rag_chain()
         chat_history = []
@@ -247,59 +246,34 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 data = await websocket.receive_text()
+                print(f"Received data: {data}")
+                
                 data_json = json.loads(data)
+                user_input = data_json.get("message")
                 
-                # Ping 메시지 처리
-                if data_json.get("type") == "ping":
-                    await websocket.send_json({"type": "pong"})
+                if not user_input:
                     continue
-                
-                print(f"Received message: {data}")
-                
-                user_input = data_json["message"]
-                
+                    
                 result = rag_chain.invoke({
                     "input": user_input,
                     "chat_history": chat_history
                 })
                 
-                chat_history.append({"role": "user", "content": user_input})
-                chat_history.append({"role": "assistant", "content": result["answer"]})
-                
-                if len(chat_history) > 4:
-                    chat_history = chat_history[-4:]
-                
-                context_str = "\n".join([str(doc.page_content) for doc in result["context"]]) if result.get("context") else ""
-                
                 await websocket.send_json({
-                    "answer": result["answer"],
-                    "context": context_str
+                    "answer": result["answer"]
                 })
-                print("Response sent successfully")
                 
             except WebSocketDisconnect:
-                print("Client disconnected")
+                print(f"Client disconnected")
                 break
-            except json.JSONDecodeError as e:
-                print(f"Invalid JSON received: {e}")
-                await websocket.send_json({
-                    "error": "Invalid message format"
-                })
             except Exception as e:
-                print(f"Error processing message: {str(e)}")
+                print(f"Error: {str(e)}")
                 await websocket.send_json({
-                    "error": f"An error occurred: {str(e)}"
+                    "error": "처리 중 오���가 발생했습니다."
                 })
-    
+                
     except Exception as e:
-        print(f"WebSocket connection error: {str(e)}")
-    finally:
-        try:
-            if websocket.client_state != WebSocketState.DISCONNECTED:
-                await websocket.close()
-        except Exception as e:
-            print(f"Error closing websocket: {str(e)}")
-        print("WebSocket connection closed")
+        print(f"Connection error: {str(e)}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
