@@ -33,12 +33,14 @@ load_dotenv()
 
 app = FastAPI()
 
+# CORS 미들웨어 설정 수정 (app 생성 직후에 추가)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Kakao OAuth 설정
@@ -231,10 +233,13 @@ async def kakao_oauth(request: Request, code: str = None):
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     return HTTPException(status_code=400, detail="Authorization code not provided")
+# WebSocket 엔드포인트 수정
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
+        print("WebSocket connection attempt...")  # 디버깅용
         await websocket.accept()
+        print("WebSocket connected successfully")  # 디버깅용
         
         rag_chain = create_rag_chain()
         chat_history = []
@@ -242,6 +247,8 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 data = await websocket.receive_text()
+                print(f"Received message: {data}")  # 디버깅용
+                
                 user_input = json.loads(data)["message"]
                 
                 result = rag_chain.invoke({
@@ -261,35 +268,31 @@ async def websocket_endpoint(websocket: WebSocket):
                     "answer": result["answer"],
                     "context": context_str
                 })
+                print("Response sent successfully")  # 디버깅용
                 
             except WebSocketDisconnect:
                 print("Client disconnected")
                 break
-            except json.JSONDecodeError:
-                print("Invalid JSON received")
+            except json.JSONDecodeError as e:
+                print(f"Invalid JSON received: {e}")
                 await websocket.send_json({
                     "error": "Invalid message format"
                 })
             except Exception as e:
                 print(f"Error processing message: {str(e)}")
-                try:
-                    await websocket.send_json({
-                        "error": "An error occurred while processing your message"
-                    })
-                except:
-                    break
+                await websocket.send_json({
+                    "error": f"An error occurred: {str(e)}"
+                })
     
-    except WebSocketDisconnect:
-        print("Client disconnected during connection setup")
     except Exception as e:
-        print(f"Error in websocket connection: {str(e)}")
+        print(f"WebSocket connection error: {str(e)}")
     finally:
         try:
-            print("Closing WebSocket connection")
             if websocket.client_state != WebSocketState.DISCONNECTED:
                 await websocket.close()
         except Exception as e:
             print(f"Error closing websocket: {str(e)}")
+        print("WebSocket connection closed")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
