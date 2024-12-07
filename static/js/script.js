@@ -112,40 +112,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 카카오 로그인 상태 확인 및 UI 업이트 함수
     function updateLoginState() {
-        if (Kakao.Auth.getAccessToken()) {
-            Kakao.API.request({
-                url: '/v2/user/me',
-                success: function(response) {
-                    const nickname = response.properties?.nickname || '사용자';
-                    const profileImage = response.properties?.thumbnail_image || '/api/placeholder/32/32';
-                    
-                    loginLink.innerHTML = `
-                        <img src="${profileImage}" 
-                             alt="프로필" 
-                             class="profile-img" 
-                             onerror="this.src='/api/placeholder/32/32'">
-                        ${nickname}
-                    `;
-                    userProfile.textContent = nickname;
-                    logoutMenu.style.display = "block";
-
-                    // 내 정보 섹션 업데이트
-                    updateMyInfoSection({
-                        nickname: nickname,
-                        thumbnail_image: profileImage,
-                        email: response.kakao_account?.email
+        Kakao.Auth.getStatusInfo()
+            .then(function(res) {
+                if (res.status === 'connected') {
+                    // 사용자 정보 �청
+                    Kakao.API.request({
+                        url: '/v2/user/me',
+                    })
+                    .then(function(response) {
+                        console.log("사용자 정보:", response);
+                        
+                        // 프로필 정보 �데이트
+                        const nickname = response.properties.nickname;
+                        const profileImage = response.properties.profile_image;
+                        
+                        userProfile.innerHTML = `
+                            <img src="${profileImage}" alt="프로필" class="profile-image">
+                            <span>${nickname}</span>
+                        `;
+                        
+                        // UI 상태 변경
+                        loginLink.style.display = "none";
+                        logoutMenu.style.display = "block";
+                        
+                        // 사용자 정보 �장
+                        CookieUtil.setCookie('userInfo', {
+                            nickname: nickname,
+                            profileImage: profileImage
+                        }, 7);
+                    })
+                    .catch(function(error) {
+                        console.error("사용자 정보 요청 실패:", error);
                     });
-                    
-                    console.log('로그인 성공:', response);
-                },
-                fail: function(error) {
-                    console.error('카카오 프로필 조 실패', error);
-                    handleLogout();
                 }
+            })
+            .catch(function(error) {
+                console.error("로그인 상� 확인 실패:", error);
             });
-        } else {
-            handleLogout();
-        }
     }
 
     // FavoritesManager 클래스의 메서드들
@@ -224,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
             }).join('');
 
-            // 삭제 버튼�� 이벤트 리스너 추가
+            // 삭제 버튼 이벤트 리스너 추가
             container.querySelectorAll('.remove-favorite').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -275,19 +278,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // 카카오 로그인 관련 함수들
     loginLink.addEventListener("click", function(e) {
         e.preventDefault();
-        if (!Kakao.Auth.getAccessToken()) {
-            Kakao.Auth.login({
+        console.log("로그인 시도");  // 디버깅용
+        
+        try {
+            Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image',
-                success: function(authObj) {
-                    console.log('로그인 성공:', authObj);
-                    updateLoginState();
-                },
-                fail: function(err) {
-                    console.error('로그인 실패:', err);
-                    loginErrorModal.style.display = "block";
-                }
+                scope: 'profile_nickname, profile_image, account_email'
             });
+        } catch (error) {
+            console.error("카카오 로그인 에러:", error);
+            loginErrorModal.style.display = "block";
         }
     });
 
@@ -312,7 +312,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     logoutLink.addEventListener("click", function(e) {
         e.preventDefault();
-        handleLogout();
+        if (Kakao.Auth.getAccessToken()) {
+            Kakao.Auth.logout()
+                .then(function() {
+                    // 로그아웃 처리
+                    CookieUtil.deleteCookie('userInfo');
+                    loginLink.style.display = "block";
+                    logoutMenu.style.display = "none";
+                    userProfile.innerHTML = '';
+                    console.log("로그아웃 �공");
+                })
+                .catch(function(error) {
+                    console.error("로그아웃 �패:", error);
+                });
+        }
     });
 
     // 초기 로그인 상태 확인
