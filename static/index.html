@@ -7,30 +7,22 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     <meta name="kakao-app-key" content="{{ KAKAO_APP_KEY }}">
     
-    <!-- 카카오 스크립트 로딩 순서 변경 -->
+    <!-- 카카오 SDK를 먼저 로드 -->
     <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
-    <script type="text/javascript" 
-        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_APP_KEY }}&libraries=services">
+    
+    <!-- 카카오 초기화를 즉시 실행 -->
+    <script>
+        try {
+            Kakao.init('0aa4cfc2bf90651f45f4870aeecacb99b');
+            console.log('Kakao init success:', Kakao.isInitialized());
+        } catch (error) {
+            console.error('Kakao init error:', error);
+        }
     </script>
     
-    <!-- 카카오 초기화 스크립트 -->
-    <script>
-        window.addEventListener('load', function() {
-            if (!Kakao.isInitialized()) {
-                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-                Kakao.init(kakaoAppKey);
-            }
-        });
-    </script>
-    <script>
-        console.log("KAKAO_APP_KEY:", document.querySelector('meta[name="kakao-app-key"]').content);
-        window.addEventListener('load', function() {
-            if (!Kakao.isInitialized()) {
-                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-                console.log("Initializing Kakao with key:", kakaoAppKey);
-                Kakao.init(kakaoAppKey);
-            }
-        });
+    <!-- 카카오맵 SDK는 그 후에 로드 -->
+    <script type="text/javascript" 
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0aa4cfc2bf90651f45f4870aeecacb99b&libraries=services">
     </script>
     
     <!-- 메인 스크립트는 가장 마지막에 로드 -->
@@ -238,7 +230,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 class="modal-title">로그인 오류</h2>
-            <p>카카오 로그인 중 문제가 발생했습니다. 다시 시도해 주세요.</p>
+            <p>카카오 로그인 �� 문제가 발생했습니다. 다시 시도해 주세요.</p>
             <button class="retry-btn">다시 시도</button>
         </div>
     </div>
