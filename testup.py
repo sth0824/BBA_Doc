@@ -73,7 +73,7 @@ async def read_root(request: Request):
 
 def setup_qa_system():
     contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
-    이런 경우, 대화 �� 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
+    이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
 
@@ -162,7 +162,7 @@ def run_terminal_mode():
             print(result["answer"])
             
             if result.get("context"):
-                print(f"\n{Fore.MAGENTA}[참고 ��보]{Style.RESET_ALL}")
+                print(f"\n{Fore.MAGENTA}[참고 보]{Style.RESET_ALL}")
                 for doc in result["context"]:
                     print(doc.page_content)
             
@@ -225,7 +225,7 @@ async def kakao_oauth(request: Request, code: str = None):
             token_response = requests.post(token_url, data=data)
             token_data = token_response.json()
             
-            # OAuth 콜백 페이지 렌더링
+            # OAuth ���백 페이지 렌더링
             return templates.TemplateResponse("oauth_callback.html", {
                 "request": request,
                 "token": token_data.get("access_token")
@@ -247,15 +247,17 @@ async def websocket_endpoint(websocket: WebSocket):
         render_id = websocket.headers.get('rndr-id')
         print(f"[WebSocket] Render TTL: {render_ttl}, Render ID: {render_id}")
         
-        await websocket.accept(headers={
-            "Connection": "upgrade",
-            "Upgrade": "websocket",
-            "Sec-WebSocket-Protocol": "chat"
-        })
+        # 헤더 설정 제거하고 기본 accept 사용
+        await websocket.accept()
         
         print(f"[WebSocket] Connection accepted for client {websocket.client.host}")
         
-        await websocket.send_json({"type": "pong", "status": "connected"})
+        # 연결 확인 메시지 전송
+        try:
+            await websocket.send_json({"type": "pong", "status": "connected"})
+            print("[WebSocket] Initial connection message sent")
+        except Exception as e:
+            print(f"[WebSocket] Failed to send initial message: {str(e)}")
         
         rag_chain = create_rag_chain()
         chat_history = []
@@ -269,6 +271,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 data_json = json.loads(data)
                 print(f"[WebSocket] Parsed JSON data: {data_json}")
                 
+                # Ping 메시지 처리
                 if data_json.get("type") == "ping":
                     keep_alive_counter += 1
                     print(f"[WebSocket] Received ping #{keep_alive_counter}, sending pong")
