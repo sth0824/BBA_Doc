@@ -237,9 +237,9 @@ async def kakao_oauth(request: Request, code: str = None):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
-        print("WebSocket connection attempt...")  # 디버깅용
+        print("WebSocket connection attempt...")
         await websocket.accept()
-        print("WebSocket connected successfully")  # 디버깅용
+        print("WebSocket connected successfully")
         
         rag_chain = create_rag_chain()
         chat_history = []
@@ -247,9 +247,16 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 data = await websocket.receive_text()
-                print(f"Received message: {data}")  # 디버깅용
+                data_json = json.loads(data)
                 
-                user_input = json.loads(data)["message"]
+                # Ping 메시지 처리
+                if data_json.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                    continue
+                
+                print(f"Received message: {data}")
+                
+                user_input = data_json["message"]
                 
                 result = rag_chain.invoke({
                     "input": user_input,
@@ -268,7 +275,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "answer": result["answer"],
                     "context": context_str
                 })
-                print("Response sent successfully")  # 디버깅용
+                print("Response sent successfully")
                 
             except WebSocketDisconnect:
                 print("Client disconnected")
