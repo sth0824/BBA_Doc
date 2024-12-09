@@ -1,0 +1,50 @@
+{# Jinja2 Template #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>로그인 처리 중...</title>
+    <script>
+        window.onload = function() {
+            try {
+                console.log("OAuth 콜백 페이지 로드됨");
+                
+                // 서버에서 전달된 데이터를 직접 출력해서 확인
+                console.log("서버 응답 데이터:", {
+                    token: '{{ token }}',
+                    user_info: {{ user_info|tojson|safe }}
+                });
+
+                const token = '{{ token }}';
+                const userInfo = {{ user_info|tojson|safe }};
+                
+                if (token && userInfo && userInfo.id) {
+                    // 로컬 스토리지에 저장
+                    localStorage.setItem('kakao_access_token', token);
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    console.log("로그인 정보 저장 완료:", {
+                        token: token,
+                        userInfo: userInfo
+                    });
+                    
+                    // 메인 페이지로 이동
+                    window.location.href = '/';
+                } else {
+                    console.error("필수 정보 누락:", { token, userInfo });
+                    alert("로그인 정보를 받아오지 못했습니다.");
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error("OAuth 처리 중 에러:", error);
+                alert("로그인 처리 중 오류가 발생했습니다.");
+                window.location.href = '/';
+            }
+        };
+    </script>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>로그인 처리 중입니다</h2>
+        <p style="color: #666;">잠시만 기다려주세요...</p>
+    </div>
+</body>
+</html>
