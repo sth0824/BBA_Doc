@@ -24,6 +24,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
 
 # Windows 환경에서 컬러 출력을 위한 초기화
 colorama.init()
@@ -245,12 +246,19 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.accept()
         print(f"[WebSocket] Connection accepted for {websocket.client.host}")
         
+        # 연결 확인 메시지 전송
+        await websocket.send_json({
+            "type": "system",
+            "message": "연결되었습니다."
+        })
+        
         rag_chain = create_rag_chain()
         chat_history = []
         
         while True:
             try:
-                data = await websocket.receive_text()
+                # 타임아웃 설정을 길게
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=60.0)
                 print(f"[WebSocket] Received: {data}")
                 
                 data_json = json.loads(data)
@@ -262,40 +270,48 @@ async def websocket_endpoint(websocket: WebSocket):
                 if message := data_json.get("message"):
                     print(f"[WebSocket] Processing message: {message}")
                     
-                    result = rag_chain.invoke({
-                        "input": message,
-                        "chat_history": chat_history
-                    })
-                    
-                    response = {
-                        "type": "message",
-                        "answer": result["answer"]
-                    }
-                    
-                    await websocket.send_json(response)
-                    print(f"[WebSocket] Sent response: {response}")
-                    
-                    chat_history.append({"role": "user", "content": message})
-                    chat_history.append({"role": "assistant", "content": result["answer"]})
-                    
+                    try:
+                        result = rag_chain.invoke({
+                            "input": message,
+                            "chat_history": chat_history
+                        })
+                        
+                        response = {
+                            "type": "message",
+                            "answer": result["answer"]
+                        }
+                        
+                        await websocket.send_json(response)
+                        print(f"[WebSocket] Sent response successfully")
+                        
+                        chat_history.append({"role": "user", "content": message})
+                        chat_history.append({"role": "assistant", "content": result["answer"]})
+                    except Exception as e:
+                        print(f"[WebSocket] Error processing message: {str(e)}")
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "메시지 처리 중 오류가 발생했습니다."
+                        })
+                        
+            except asyncio.TimeoutError:
+                # 타임아웃 발생 시 ping 전송
+                try:
+                    await websocket.send_json({"type": "ping"})
+                except:
+                    break
             except WebSocketDisconnect:
                 print("[WebSocket] Client disconnected normally")
                 break
             except Exception as e:
                 print(f"[WebSocket] Error in message loop: {str(e)}")
-                try:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": "메시지 처리 중 오류가 발생했습니다."
-                    })
-                except:
-                    break
+                break
                 
     except Exception as e:
         print(f"[WebSocket] Connection error: {str(e)}")
     finally:
         if websocket.client_state != WebSocketState.DISCONNECTED:
             await websocket.close()
+        print(f"[WebSocket] Connection closed for {websocket.client.host}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
