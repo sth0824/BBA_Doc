@@ -418,84 +418,76 @@ document.addEventListener("DOMContentLoaded", function () {
         
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-        console.log("WebSocket URL:", wsUrl);  // URL 디버깅용
         
         ws = new WebSocket(wsUrl);
-        console.log("WebSocket readyState:", ws.readyState);  // 연결 상태 디버깅용
-
+        
         ws.onopen = function() {
             console.log("WebSocket Connected");
-            reconnectAttempts = 0;
-            const chatInput = document.getElementById('chat-input');
-            const chatSend = document.getElementById('chat-send');
-            
-            if (chatInput) chatInput.disabled = false;
-            if (chatSend) chatSend.disabled = false;
-            
             updateConnectionStatus("연결됨", "#4CAF50");
             
+            // 입력 필드 활성화
+            chatInput.disabled = false;
+            chatSend.disabled = false;
+            
             // Ping 인터벌 설정
+            if (pingInterval) clearInterval(pingInterval);
             pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: "ping" }));
                 }
             }, PING_INTERVAL);
         };
-
+        
         ws.onmessage = function(event) {
-            console.log("Received message:", event.data);  // 메시지 수신 디버깅
+            console.log("Received message:", event.data);
+            
             try {
                 const response = JSON.parse(event.data);
                 
-                // ping/pong 메시지는 무시
-                if (response.type === "pong") {
-                    return;
-                }
+                if (response.type === "pong") return;
                 
-                if (response.error) {
-                    console.error("Server error:", response.error);
-                    addMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "bot");
-                } else if (response.answer) {  // 챗봇 응답 처리
+                if (response.type === "error") {
+                    addMessage(response.message || "오류가 발생했습니다.", "error");
+                } else if (response.answer) {
                     addMessage(response.answer, "bot");
                 }
                 
                 // 로딩 표시 숨기기
-                const loadingIndicator = document.getElementById('loading-indicator');
-                if (loadingIndicator) {
-                    loadingIndicator.style.display = "none";
-                }
+                loadingIndicator.style.display = "none";
                 
-                // 스크롤을 최하단으로 이동
+                // 스크롤
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
             } catch (error) {
                 console.error("Error parsing message:", error);
-                addMessage("메시지 처리 중 오류가 발생했습니다.", "bot");
+                addMessage("메시지 처리 중 오류가 발생했습니다.", "error");
             }
         };
-
-        ws.onclose = function() {
-            console.log("WebSocket Disconnected");
-            handleReconnect();
+        
+        ws.onclose = function(event) {
+            console.log("WebSocket Disconnected", event.code, event.reason);
+            updateConnectionStatus("연결 끊김", "#FF0000");
+            
+            // 입력 필드 비활성화
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+            
+            // Ping 인터벌 제거
+            if (pingInterval) clearInterval(pingInterval);
+            
+            // 재연결 시도
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                setTimeout(connectWebSocket, RECONNECT_DELAY);
+                reconnectAttempts++;
+            } else {
+                addMessage("서버와의 연결이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
+            }
         };
-
+        
         ws.onerror = function(error) {
             console.error("WebSocket Error:", error);
             updateConnectionStatus("연결 오류", "#FF0000");
         };
-    }
-
-    function handleReconnect() {
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-            reconnectAttempts++;
-            console.log(`Reconnecting... Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`);
-            updateConnectionStatus(`재연결 시도 중... (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`, '#FFA500');
-            setTimeout(connectWebSocket, RECONNECT_DELAY);
-        } else {
-            console.log("Max reconnection attempts reached");
-            updateConnectionStatus("연결 실패", "#f44336");
-            appendMessage("서버와의 연결이 끊어졌습다. 페이지를 새로고침해주세요.", "error");
-        }
     }
 
     // 페이지 로드시 WebSocket 연결 시작
@@ -685,30 +677,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // 맵 기화 시작
     initializeMap();
 
-    // 메시지 전송 함수
+    // 메시지 전송 함수 수정
     function sendMessage() {
         const message = chatInput.value.trim();
         if (message && ws && ws.readyState === WebSocket.OPEN) {
-            console.log("메시지 전송 시도:", message);
-            
             // 사용자 메시지 표시
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message user-message';
-            messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
-            chatMessages.appendChild(messageDiv);
+            addMessage(message, "user");
             
-            // 웹소켓으로 메시지 전송
-            ws.send(JSON.stringify({
-                type: "message",
-                message: message
-            }));
-            
-            // 입력창 초기화 및 스크롤
-            chatInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // 로딩 표시
-            loadingIndicator.style.display = "block";
+            // 메시지 전송
+            try {
+                ws.send(JSON.stringify({
+                    type: "message",
+                    message: message
+                }));
+                
+                // 입력창 초기화
+                chatInput.value = '';
+                
+                // 로딩 표시
+                loadingIndicator.style.display = "block";
+                
+            } catch (error) {
+                console.error("Error sending message:", error);
+                addMessage("메시지 전송에 실패했습니다.", "error");
+            }
         }
     }
 
