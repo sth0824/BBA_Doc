@@ -287,23 +287,27 @@ document.addEventListener("DOMContentLoaded", function () {
     // 로그아웃 처리
     function handleLogout() {
         console.log("로그아웃 처리 시작");
-        if (Kakao.Auth.getAccessToken()) {
-            Kakao.Auth.logout()
-                .then(() => {
-                    console.log("카카오 로그아웃 성공");
-                    // 로컬 스토리지 클리어
-                    localStorage.removeItem('kakao_access_token');
-                    localStorage.removeItem('user_info');
-                    // UI 초기화
-                    loginLink.style.display = "block";
-                    logoutMenu.style.display = "none";
-                    userProfile.textContent = "";
-                    myInfoModal.style.display = "none";
-                    updateMyInfoSection(null);
-                })
-                .catch(error => {
-                    console.error("카카오 로그아웃 실패:", error);
-                });
+        try {
+            if (Kakao.Auth.getAccessToken()) {
+                Kakao.Auth.logout()
+                    .then(() => {
+                        console.log("카카오 로그아웃 성공");
+                        // 로컬 스토리지 클리어
+                        localStorage.removeItem('kakao_access_token');
+                        localStorage.removeItem('user_info');
+                        
+                        // UI 초기화
+                        loginLink.style.display = "block";
+                        logoutMenu.style.display = "none";
+                        userProfile.textContent = "";
+                        updateMyInfoSection(null);
+                    })
+                    .catch(error => {
+                        console.error("카카오 로그아웃 실패:", error);
+                    });
+            }
+        } catch (error) {
+            console.error("로그아웃 처리 중 에러:", error);
         }
     }
 
@@ -531,7 +535,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병��� 검색
+            // 주변 병원 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -862,7 +866,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 카카오 매니저 인스턴스 생성
         const kakaoManager = new KakaoManager();
 
-        // 로그인 ���튼 이벤트 리스너
+        // 로그인 버튼 이벤트 리스너
         loginLink.addEventListener("click", function(e) {
             e.preventDefault();
             if (!kakaoManager.initialized) {
@@ -894,30 +898,30 @@ document.addEventListener("DOMContentLoaded", function () {
     function checkLoginStatus() {
         try {
             const token = localStorage.getItem('kakao_access_token');
-            const userInfo = localStorage.getItem('user_info');
+            const userInfoStr = localStorage.getItem('user_info');
             
-            console.log("저장된 토큰 확인:", !!token);
-            console.log("저장된 사용자 정보 확인:", !!userInfo);
+            console.log("로그인 상태 체크:", {
+                hasToken: !!token,
+                hasUserInfo: !!userInfoStr
+            });
 
-            if (token && userInfo) {
-                // 토큰이 있으면 사용자 정보로 UI 업데이트
-                const user = JSON.parse(userInfo);
-                console.log("로그인 상태 감지됨:", user);
+            if (token && userInfoStr) {
+                const userInfo = JSON.parse(userInfoStr);
+                console.log("사용자 정보:", userInfo);
                 
-                // 로그인 버튼 숨기고 로그아웃 메뉴 표시
+                // UI 업데이트
                 loginLink.style.display = "none";
                 logoutMenu.style.display = "block";
                 
-                // 사용자 프로필 업데이트
-                if (user.nickname) {
-                    userProfile.textContent = user.nickname;
+                if (userInfo.nickname) {
+                    userProfile.textContent = userInfo.nickname;
                 }
                 
                 // 내 정보 섹션 업데이트
-                updateMyInfoSection(user);
+                updateMyInfoSection(userInfo);
             } else {
-                console.log("로그아웃 상태 감지됨");
-                // 로그아웃 상태로 UI 초기화
+                console.log("로그아웃 상태");
+                // 로그아웃 상태 UI
                 loginLink.style.display = "block";
                 logoutMenu.style.display = "none";
                 userProfile.textContent = "";
@@ -925,7 +929,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (error) {
             console.error("로그인 상태 체크 중 에러:", error);
-            // 에러 발생 시 로그아웃 상태로 초기화
             handleLogout();
         }
     }
