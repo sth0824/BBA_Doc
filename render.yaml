@@ -18,8 +18,8 @@ services:
    # 타임아웃 설정 최대화
     healthCheckPath: /
     healthCheckTimeout: 100
-    httpTimeout: 100
-    gracePeriodSeconds: 60
+    httpTimeout: 300
+    gracePeriodSeconds: 120
     # 웹소켓 관련 설정
     headers:
       - path: /*

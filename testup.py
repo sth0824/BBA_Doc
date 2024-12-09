@@ -74,7 +74,7 @@ async def read_root(request: Request):
     })
 
 def setup_qa_system():
-    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
+    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대��� 내용과 관련이 있을 수 있습니다. 
     이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
@@ -90,7 +90,7 @@ def setup_qa_system():
        - 야간/공휴일인 경우 24시간 운영하는 병원 우선 추천
     
     2. 특정 지역 문의시:
-       - 해당 동네(예: 죽전동, 상현동 등)의 관��� 병원들 우선 추천
+       - 해당 동네(예: 죽전동, 상현동 등)의 관 병원들 우선 추천
     
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
@@ -301,25 +301,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 })
                 print("[WebSocket] Response sent successfully")
                 
-            except WebSocketDisconnect as e:
-                print(f"\n[WebSocket] Client disconnected with code: {e.code}")
-                print(f"[WebSocket] Disconnect reason: {getattr(e, 'reason', 'No reason provided')}")
-                print(f"[WebSocket] Total keep-alive messages: {keep_alive_counter}")
+            except Exception as e:
+                print(f"[WebSocket] Error processing message: {str(e)}")
                 break
                 
-            except Exception as e:
-                print(f"\n[WebSocket] Error during message processing: {str(e)}")
-                print(f"[WebSocket] Error type: {type(e).__name__}")
-                try:
-                    await websocket.send_json({
-                        "error": "처리 중 오류가 발생했습니다."
-                    })
-                except:
-                    print("[WebSocket] Failed to send error message")
-                
     except Exception as e:
-        print(f"\n[WebSocket] Connection error: {str(e)}")
-        print(f"[WebSocket] Error type: {type(e).__name__}")
+        print(f"[WebSocket] Connection error: {str(e)}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
