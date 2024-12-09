@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: bbadoc
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python testup.py --web
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+      - key: UPSTAGE_API_KEY
+        fromGroup: bbadoc-secrets
+      - key: KAKAO_CLIENT_ID
+        fromGroup: bbadoc-secrets
+      - key: KAKAO_REDIRECT_URI
+        fromGroup: bbadoc-secrets
+      - key: KAKAO_APP_KEY
+        fromGroup: bbadoc-secrets
+   # 타임아웃 설정 최대화
+    healthCheckPath: /
+    healthCheckTimeout: 100
+    httpTimeout: 100
+    gracePeriodSeconds: 60
+    # 웹소켓 관련 설정
+    headers:
+      - path: /*
+        name: Connection
+        value: 'upgrade'
+      - path: /*
+        name: Upgrade
+        value: 'websocket'
