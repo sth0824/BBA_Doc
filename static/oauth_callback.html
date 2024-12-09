@@ -7,37 +7,36 @@
             try {
                 console.log("OAuth 콜백 페이지 로드됨");
                 const token = "{{ token }}";
-                console.log("받은 토큰:", token ? "존재" : "없음");
+                console.log("토큰 존재 여부:", !!token);
                 
                 if (token) {
-                    console.log("토큰을 로컬 스토리지에 저장 시도");
+                    console.log("토큰 저장 시도");
                     localStorage.setItem('kakao_access_token', token);
                     
+                    // 팝업 방식과 리다이렉트 방식 모두 처리
                     if (window.opener) {
-                        console.log("부모 창이 존재함, 리다이렉트 시도");
-                        // 부모 창 새로고침 전에 약간의 지연 추가
-                        setTimeout(() => {
-                            console.log("부모 창 리다이렉트 실행");
-                            window.opener.location.href = '/';
-                            console.log("창 닫기 시도");
-                            window.close();
-                        }, 500);
+                        console.log("팝업 방식으로 처리");
+                        window.opener.postMessage({ type: 'LOGIN_SUCCESS', token }, '*');
+                        setTimeout(() => window.close(), 500);
                     } else {
-                        console.log("부모 창이 없음, 직접 리다이렉트");
-                        window.location.href = '/';
+                        console.log("리다이렉트 방식으로 처리");
+                        window.location.replace('/');
                     }
                 } else {
                     console.error("토큰이 없음");
-                    window.location.href = '/';
+                    alert("로그인 처리 중 오류가 발생했습니다.");
+                    window.location.replace('/');
                 }
             } catch (error) {
                 console.error("OAuth 콜백 처리 중 에러:", error);
-                window.location.href = '/';
+                alert("로그인 처리 중 오류가 발생했습니다.");
+                window.location.replace('/');
             }
         };
     </script>
 </head>
 <body>
     <p style="text-align: center; margin-top: 20px;">로그인 처리 중입니다...</p>
+    <p style="text-align: center; font-size: 12px;">자동으로 페이지가 이동하지 않으면 <a href="/" onclick="window.location.replace('/'); return false;">여기</a>를 클릭하세요.</p>
 </body>
 </html>
