@@ -1,51 +1,43 @@
+{# Jinja2 Template #}
 <!DOCTYPE html>
 <html>
 <head>
     <title>로그인 처리 중...</title>
     <script>
+        // @ts-nocheck
         window.onload = function() {
             try {
                 console.log("OAuth 콜백 페이지 로드됨");
-                const token = "{{ token }}";
-                const userInfo = {{ user_info|tojson|safe if user_info else 'null' }};
-                const error = "{{ error }}";
                 
-                console.log("토큰 수신 상태:", !!token);
-                console.log("사용자 정보 수신 상태:", !!userInfo);
+                // 서버에서 전달된 데이터
+                const token = "{{ token or '' }}";
+                const userInfo = {{ user_info|tojson|safe or '{}' }};
                 
-                if (error) {
-                    console.error("에러 발생:", error);
-                    alert("로그인 처리 중 오류가 발생했습니다.");
-                    window.location.href = '/';
-                    return;
-                }
-                
-                if (token && userInfo) {
-                    console.log("토큰 및 사용자 정보 저장 시작");
+                if (token && Object.keys(userInfo).length > 0) {
+                    // 토큰과 사용자 정보가 있는 경우에만 저장
                     localStorage.setItem('kakao_access_token', token);
                     localStorage.setItem('user_info', JSON.stringify(userInfo));
-                    console.log("저장 완료");
+                    console.log("로그인 정보 저장 성공");
                     
                     // 메인 페이지로 이동
                     setTimeout(() => {
-                        console.log("메인 페이지로 이동");
                         window.location.href = '/';
-                    }, 1000);
+                    }, 500);
                 } else {
-                    console.error("필요한 정보가 없음");
-                    alert("로그인 처리 중 오류가 발생했습니다.");
+                    console.error("로그인 정보 불완전");
                     window.location.href = '/';
                 }
             } catch (error) {
-                console.error("OAuth 콜백 처리 중 에러:", error);
-                alert("로그인 처리 중 오류가 발생했습니다.");
+                console.error("OAuth 처리 중 에러:", error);
                 window.location.href = '/';
             }
         };
     </script>
 </head>
 <body>
-    <p style="text-align: center; margin-top: 20px;">로그인 처리 중입니다...</p>
-    <p style="text-align: center; font-size: 12px;">자시만 기다려주세요...</p>
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>로그인 처리 중입니다</h2>
+        <p style="color: #666;">잠시만 기다려주세요...</p>
+    </div>
 </body>
 </html>
