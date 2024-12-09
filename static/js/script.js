@@ -112,6 +112,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 카카오 로그인 상태 확인 및 UI 업이트 함수
     function updateLoginState() {
+        const token = localStorage.getItem('kakao_access_token');
+        if (token) {
+            try {
+                Kakao.Auth.setAccessToken(token);
+            } catch (error) {
+                console.error("카카오 토큰 설정 실패:", error);
+                localStorage.removeItem('kakao_access_token'); // 잘못된 토큰 제거
+            }
+        }
+
         Kakao.Auth.getStatusInfo()
             .then(function(res) {
                 if (res.status === 'connected') {
@@ -639,7 +649,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 웹카카���맵 기화 함수
+    // 웹카카오맵 기화 함수
     function initializeMap() {
         try {
             if (typeof kakao === 'undefined') {
