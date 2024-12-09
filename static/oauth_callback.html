@@ -11,24 +11,20 @@
                 if (token) {
                     localStorage.setItem('kakao_access_token', token);
                     
-                    // 부모 창 새로고침 전에 약간의 지연 추가
-                    setTimeout(() => {
-                        if (window.opener) {
-                            window.opener.location.reload();
-                            window.close();
-                        } else {
-                            // opener가 없는 경우 메인 페이지로 리다이렉트
-                            window.location.href = '/';
-                        }
-                    }, 1000);
+                    // window.opener가 없는 경우를 대비한 처리
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                        window.close();
+                    } else {
+                        // opener가 없는 경우 메인 페이지로 이동
+                        window.location.href = '/';
+                    }
                 } else {
                     console.error("Token not received");
-                    // 토큰이 없는 경우 메인 페이지로 리다이렉트
                     window.location.href = '/';
                 }
             } catch (error) {
                 console.error("Error in callback:", error);
-                // 에러 발생시 메인 페이지로 리다이렉트
                 window.location.href = '/';
             }
         };
