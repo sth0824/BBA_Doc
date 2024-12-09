@@ -74,7 +74,7 @@ async def read_root(request: Request):
     })
 
 def setup_qa_system():
-    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대��� 내용과 관련이 있을 수 있습니다. 
+    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질문이 이전 대화 내용과 관련이 있을 수 있습니다. 
     이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
@@ -242,71 +242,60 @@ async def health_check():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
-        print(f"\n[WebSocket] Connection attempt from {websocket.client.host}")
-        print(f"[WebSocket] Client headers: {websocket.headers}")
-        
-        render_ttl = websocket.headers.get('render-proxy-ttl')
-        render_id = websocket.headers.get('rndr-id')
-        print(f"[WebSocket] Render TTL: {render_ttl}, Render ID: {render_id}")
-        
-        # 헤더 설정 제거하고 기본 accept 사용
         await websocket.accept()
-        
-        print(f"[WebSocket] Connection accepted for client {websocket.client.host}")
-        
-        # 연결 확인 메시지 전송
-        try:
-            await websocket.send_json({"type": "pong", "status": "connected"})
-            print("[WebSocket] Initial connection message sent")
-        except Exception as e:
-            print(f"[WebSocket] Failed to send initial message: {str(e)}")
+        print(f"[WebSocket] Connection accepted for {websocket.client.host}")
         
         rag_chain = create_rag_chain()
         chat_history = []
-        keep_alive_counter = 0
         
         while True:
             try:
                 data = await websocket.receive_text()
-                print(f"\n[WebSocket] Received raw data: {data}")
+                print(f"[WebSocket] Received: {data}")
                 
                 data_json = json.loads(data)
-                print(f"[WebSocket] Parsed JSON data: {data_json}")
                 
-                # Ping 메시지 처리
                 if data_json.get("type") == "ping":
-                    keep_alive_counter += 1
-                    print(f"[WebSocket] Received ping #{keep_alive_counter}, sending pong")
-                    await websocket.send_json({
-                        "type": "pong",
-                        "counter": keep_alive_counter
+                    await websocket.send_json({"type": "pong"})
+                    continue
+                
+                if message := data_json.get("message"):
+                    print(f"[WebSocket] Processing message: {message}")
+                    
+                    result = rag_chain.invoke({
+                        "input": message,
+                        "chat_history": chat_history
                     })
-                    continue
-                
-                user_input = data_json.get("message")
-                if not user_input:
-                    print("[WebSocket] Empty message received, skipping")
-                    continue
-                
-                print(f"[WebSocket] Processing user input: {user_input}")
-                result = rag_chain.invoke({
-                    "input": user_input,
-                    "chat_history": chat_history
-                })
-                
-                print(f"[WebSocket] Generated response: {result['answer']}")
-                
-                await websocket.send_json({
-                    "answer": result["answer"]
-                })
-                print("[WebSocket] Response sent successfully")
-                
-            except Exception as e:
-                print(f"[WebSocket] Error processing message: {str(e)}")
+                    
+                    response = {
+                        "type": "message",
+                        "answer": result["answer"]
+                    }
+                    
+                    await websocket.send_json(response)
+                    print(f"[WebSocket] Sent response: {response}")
+                    
+                    chat_history.append({"role": "user", "content": message})
+                    chat_history.append({"role": "assistant", "content": result["answer"]})
+                    
+            except WebSocketDisconnect:
+                print("[WebSocket] Client disconnected normally")
                 break
+            except Exception as e:
+                print(f"[WebSocket] Error in message loop: {str(e)}")
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "메시지 처리 중 오류가 발생했습니다."
+                    })
+                except:
+                    break
                 
     except Exception as e:
         print(f"[WebSocket] Connection error: {str(e)}")
+    finally:
+        if websocket.client_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--web":
