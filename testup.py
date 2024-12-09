@@ -75,7 +75,7 @@ async def read_root(request: Request):
     })
 
 def setup_qa_system():
-    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질이 이전 대화 내용과 관련이 있을 수 있습니다. 
+    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질�� 이전 대화 내용과 관련이 있을 수 있습니다. 
     이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
@@ -214,27 +214,44 @@ async def kakao_login(token: KakaoToken):
         raise HTTPException(status_code=400, detail=str(e))
 @app.get("/oauth")
 async def kakao_oauth(request: Request, code: str = None):
-    if code:
-        try:
-            # 액세스 토큰 요청
-            token_url = "https://kauth.kakao.com/oauth/token"
-            data = {
-                "grant_type": "authorization_code",
-                "client_id": os.getenv("KAKAO_CLIENT_ID"),
-                "redirect_uri": "https://bba-doc-1.onrender.com/oauth",
-                "code": code
-            }
-            token_response = requests.post(token_url, data=data)
-            token_data = token_response.json()
+    print(f"OAuth 콜백 받음, 코드: {code[:10]}...")  # 보안을 위해 코드 일부만 출력
+    
+    try:
+        if not code:
+            raise HTTPException(status_code=400, detail="Authorization code not provided")
             
-            # OAuth 백 페이지 렌더링
-            return templates.TemplateResponse("oauth_callback.html", {
+        # 카카오 토큰 요청
+        token_url = "https://kauth.kakao.com/oauth/token"
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": os.getenv("KAKAO_CLIENT_ID"),
+            "redirect_uri": "https://bba-doc-1.onrender.com/oauth",
+            "code": code
+        }
+        
+        print("토큰 요청 시도...")
+        token_response = requests.post(token_url, data=data)
+        
+        if token_response.status_code != 200:
+            print(f"토큰 요청 실패: {token_response.status_code}")
+            print(f"에러 응답: {token_response.text}")
+            raise HTTPException(status_code=400, detail="Token request failed")
+            
+        token_data = token_response.json()
+        print("토큰 발급 성공")
+        
+        # OAuth 콜백 페이지 렌더링
+        return templates.TemplateResponse(
+            "oauth_callback.html",
+            {
                 "request": request,
                 "token": token_data.get("access_token")
-            })
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
-    return HTTPException(status_code=400, detail="Authorization code not provided")
+            }
+        )
+        
+    except Exception as e:
+        print(f"OAuth 처리 중 에러 발생: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
