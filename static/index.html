@@ -16,9 +16,16 @@
     <!-- 카카오 초기화 스크립트 추가 -->
     <script>
         window.addEventListener('load', function() {
+            const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+            console.log("카카오 앱 키:", kakaoAppKey);  // 디버깅용
+            
             if (!Kakao.isInitialized()) {
-                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-                Kakao.init(kakaoAppKey);
+                try {
+                    Kakao.init(kakaoAppKey);
+                    console.log("카카오 초기화 성공");
+                } catch (error) {
+                    console.error("카카오 초기화 실패:", error);
+                }
             }
         });
     </script>
