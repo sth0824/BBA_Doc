@@ -66,6 +66,8 @@ app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 async def read_root(request: Request):
     kakao_key = os.getenv("KAKAO_APP_KEY")
     print(f"Using KAKAO_APP_KEY: {kakao_key}")
+    if not kakao_key:
+        print("WARNING: KAKAO_APP_KEY is not set!")
     return templates.TemplateResponse("index.html", {
         "request": request,
         "KAKAO_APP_KEY": kakao_key
@@ -88,7 +90,7 @@ def setup_qa_system():
        - 야간/공휴일인 경우 24시간 운영하는 병원 우선 추천
     
     2. 특정 지역 문의시:
-       - 해당 동네(예: 죽전동, 상현동 등)의 관련 병원들 우선 추천
+       - 해당 동네(예: 죽전동, 상현동 등)의 관��� 병원들 우선 추천
     
     3. 진료과 문의시:
        - 해당 진료과의 병원들을 영업시간과 함께 추천
@@ -225,7 +227,7 @@ async def kakao_oauth(request: Request, code: str = None):
             token_response = requests.post(token_url, data=data)
             token_data = token_response.json()
             
-            # OAuth ���백 페이지 렌더링
+            # OAuth 백 페이지 렌더링
             return templates.TemplateResponse("oauth_callback.html", {
                 "request": request,
                 "token": token_data.get("access_token")
