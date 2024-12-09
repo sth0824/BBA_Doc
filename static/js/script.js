@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image, account_email'
+                scope: 'profile_nickname, profile_image'
             });
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     loginLink.style.display = "block";
                     logoutMenu.style.display = "none";
                     userProfile.innerHTML = '';
-                    console.log("로그아웃 공");
+                    console.log("로그���웃 공");
                 })
                 .catch(function(error) {
                     console.error("로그아웃 패:", error);
@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("WebSocket Connected");
             updateConnectionStatus("연결됨", "#4CAF50");
             
-            // ���력 필드 활성화
+            // 입력 필드 활성화
             chatInput.disabled = false;
             chatSend.disabled = false;
             
@@ -726,7 +726,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
             
-            console.log("카카오맵 초기화 완료");
+            console.log("카카��맵 초기화 완료");
             
         } catch (error) {
             console.error("맵 초기화 중 오류:", error);
