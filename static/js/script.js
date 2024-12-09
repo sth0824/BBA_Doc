@@ -270,12 +270,19 @@ document.addEventListener("DOMContentLoaded", function () {
     // 카카오 로그인 관련 함수들
     loginLink.addEventListener("click", function(e) {
         e.preventDefault();
-        console.log("로그인 시도");  // 디버깅용
+        console.log("로그인 버튼 클릭됨");
         
         try {
+            console.log("카카오 인증 시도");
             Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image'
+                scope: 'profile_nickname, profile_image',
+                success: function(authObj) {
+                    console.log("카카오 인증 성공");
+                },
+                fail: function(err) {
+                    console.error("카카오 인증 실패:", err);
+                }
             });
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
@@ -456,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         ws.onclose = function(event) {
             console.log("WebSocket Disconnected", event.code, event.reason);
-            updateConnectionStatus("연결 끊김", "#FF0000");
+            updateConnectionStatus("연결 끊���", "#FF0000");
             
             // 입력 필드 비활성화
             chatInput.disabled = true;
@@ -494,7 +501,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 웹카오맵 기화
+    // 웹카오맵 기���
     const mapContainer = document.getElementById("map");
     const options = {
         center: new kakao.maps.LatLng(33.450701, 126.570667),
@@ -643,7 +650,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            console.log("���카오맵 초기화 시작");
+            console.log("카카오맵 초기화 시작");
             const mapContainer = document.getElementById("map");
             const options = {
                 center: new kakao.maps.LatLng(37.3218778, 127.1086078),  // 수지구 좌심 좌표
@@ -670,7 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         image: markerImage
                     });
                     
-                    // 현재 위치 인���윈도우
+                    // 현재 위치 인포윈도우
                     const infowindow = new kakao.maps.InfoWindow({
                         content: '<div style="padding:5px;">현재 위치</div>'
                     });
