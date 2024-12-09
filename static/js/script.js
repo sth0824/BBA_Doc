@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-        console.log("WebSocket URL:", wsUrl);  // URL ��버깅용
+        console.log("WebSocket URL:", wsUrl);  // URL 디버깅용
         
         ws = new WebSocket(wsUrl);
         console.log("WebSocket readyState:", ws.readyState);  // 연결 상태 디버깅용
@@ -432,7 +432,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             updateConnectionStatus("연결됨", "#4CAF50");
             
-            // Ping 인터벌 설�
+            // Ping 인터벌 설정
             pingInterval = setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ type: "ping" }));
@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         ws.onmessage = function(event) {
-            console.log("Received message:", event.data);  // ��시지 수신 디버깅
+            console.log("Received message:", event.data);  // 메시지 수신 디버깅
             try {
                 const response = JSON.parse(event.data);
                 if (response.error) {
@@ -639,18 +639,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 웹카카오맵 기화 함수
+    // 웹카카���맵 기화 함수
     function initializeMap() {
-        if (typeof kakao !== 'undefined' && kakao.maps) {
+        try {
+            if (typeof kakao === 'undefined') {
+                console.log("카카오맵 SDK가 로드되지 않음");
+                setTimeout(initializeMap, 100);
+                return;
+            }
+
+            if (!kakao.maps) {
+                console.log("카카오맵 객체가 초기화되지 않음");
+                setTimeout(initializeMap, 100);
+                return;
+            }
+
+            console.log("카카오맵 초기화 시작");
             const mapContainer = document.getElementById("map");
             const options = {
-                center: new kakao.maps.LatLng(33.450701, 126.570667),
+                center: new kakao.maps.LatLng(37.3218778, 127.1086078),  // 수지구 좌표
                 level: 5,
             };
             const map = new kakao.maps.Map(mapContainer, options);
-            // 나머지 맵 관련 코드...
-        } else {
-            // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
+            console.log("카카오맵 생성 성공");
+
+        } catch (error) {
+            console.error("맵 초기화 중 오류:", error);
             setTimeout(initializeMap, 100);
         }
     }
