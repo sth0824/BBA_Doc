@@ -75,7 +75,7 @@ async def read_root(request: Request):
     })
 
 def setup_qa_system():
-    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질��이 이전 대화 내용과 관련이 있을 수 있습니다. 
+    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질이 이전 대화 내용과 관련이 있을 수 있습니다. 
     이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
@@ -142,7 +142,7 @@ def create_rag_chain():
 
 def run_terminal_mode():
     print(f"{Fore.CYAN}=== 용인시 수지구 병원 정보 챗봇 ==={Style.RESET_ALL}")
-    print(f"{Fore.GREEN}��상, 진료과목, 또는 원하시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}상, 진료과목, 또는 원하시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
     print(f"{Fore.GREEN}예시: '가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
     
     try:
@@ -202,7 +202,7 @@ async def kakao_login(token: KakaoToken):
         user_response = requests.get(user_url, headers=headers)
         user_info = user_response.json()
 
-        # 사용자 정보 반환
+        # 사용자 정보 반환 (이메일 필드 제거)
         return JSONResponse(content={
             "status": "success",
             "user": {
