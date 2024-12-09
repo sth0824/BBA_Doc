@@ -4,16 +4,37 @@
     <title>로그인 처리 중...</title>
     <script>
         window.onload = function() {
-            const token = "{{ token }}";
-            if (token) {
-                localStorage.setItem('kakao_access_token', token);
-                window.opener.location.reload();
+            try {
+                const token = "{{ token }}";
+                console.log("Received token:", token); // 디버깅용
+                
+                if (token) {
+                    localStorage.setItem('kakao_access_token', token);
+                    
+                    // 부모 창 새로고침 전에 약간의 지연 추가
+                    setTimeout(() => {
+                        if (window.opener) {
+                            window.opener.location.reload();
+                            window.close();
+                        } else {
+                            // opener가 없는 경우 메인 페이지로 리다이렉트
+                            window.location.href = '/';
+                        }
+                    }, 1000);
+                } else {
+                    console.error("Token not received");
+                    // 토큰이 없는 경우 메인 페이지로 리다이렉트
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error("Error in callback:", error);
+                // 에러 발생시 메인 페이지로 리다이렉트
+                window.location.href = '/';
             }
-            window.close();
         };
     </script>
 </head>
 <body>
-    <p>로그인 처리 중입니다...</p>
+    <p style="text-align: center; margin-top: 20px;">로그인 처리 중입니다...</p>
 </body>
 </html>
