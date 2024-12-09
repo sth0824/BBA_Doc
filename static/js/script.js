@@ -276,13 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("카카오 인증 시도");
             Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image',
-                success: function(authObj) {
-                    console.log("카카오 인증 성공");
-                },
-                fail: function(err) {
-                    console.error("카카오 인증 실패:", err);
-                }
+                scope: 'profile_nickname, profile_image'
             });
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
@@ -292,21 +286,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 로그아웃 처리
     function handleLogout() {
+        console.log("로그아웃 처리 시작");
         if (Kakao.Auth.getAccessToken()) {
-            Kakao.Auth.logout();
+            Kakao.Auth.logout()
+                .then(() => {
+                    console.log("카카오 로그아웃 성공");
+                    // 로컬 스토리지 클리어
+                    localStorage.removeItem('kakao_access_token');
+                    localStorage.removeItem('user_info');
+                    // UI 초기화
+                    loginLink.style.display = "block";
+                    logoutMenu.style.display = "none";
+                    userProfile.textContent = "";
+                    myInfoModal.style.display = "none";
+                    updateMyInfoSection(null);
+                })
+                .catch(error => {
+                    console.error("카카오 로그아웃 실패:", error);
+                });
         }
-        loginLink.innerHTML = `
-            <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
-                 alt="카카오 로그인" 
-                 class="kakao-login-image">
-            로그인
-        `;
-        logoutMenu.style.display = "none";
-        userProfile.textContent = "";
-        myInfoModal.style.display = "none";
-        
-        // 내 정보 섹션 초기화
-        updateMyInfoSection(null);
     }
 
     logoutLink.addEventListener("click", function(e) {
@@ -463,7 +461,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         ws.onclose = function(event) {
             console.log("WebSocket Disconnected", event.code, event.reason);
-            updateConnectionStatus("연결 끊���", "#FF0000");
+            updateConnectionStatus("연결 끊어졌습니다.", "#FF0000");
             
             // 입력 필드 비활성화
             chatInput.disabled = true;
@@ -501,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 웹카오맵 기���
+    // 웹카오맵 기화
     const mapContainer = document.getElementById("map");
     const options = {
         center: new kakao.maps.LatLng(33.450701, 126.570667),
@@ -533,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병원 검색
+            // 주변 병��� 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -864,7 +862,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 카카오 매니저 인스턴스 생성
         const kakaoManager = new KakaoManager();
 
-        // 로그인 버튼 이벤트 리스너
+        // 로그인 ���튼 이벤트 리스너
         loginLink.addEventListener("click", function(e) {
             e.preventDefault();
             if (!kakaoManager.initialized) {
@@ -885,4 +883,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // 나머지 코드는 그대로 유지...
     });
+
+    // 페이지 로드 시 로그인 상태 체크
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("페이지 로드됨, 로그인 상태 체크");
+        checkLoginStatus();
+    });
+
+    // 로그인 상태 체크 및 UI 업데이트
+    function checkLoginStatus() {
+        try {
+            const token = localStorage.getItem('kakao_access_token');
+            const userInfo = localStorage.getItem('user_info');
+            
+            console.log("저장된 토큰 확인:", !!token);
+            console.log("저장된 사용자 정보 확인:", !!userInfo);
+
+            if (token && userInfo) {
+                // 토큰이 있으면 사용자 정보로 UI 업데이트
+                const user = JSON.parse(userInfo);
+                console.log("로그인 상태 감지됨:", user);
+                
+                // 로그인 버튼 숨기고 로그아웃 메뉴 표시
+                loginLink.style.display = "none";
+                logoutMenu.style.display = "block";
+                
+                // 사용자 프로필 업데이트
+                if (user.nickname) {
+                    userProfile.textContent = user.nickname;
+                }
+                
+                // 내 정보 섹션 업데이트
+                updateMyInfoSection(user);
+            } else {
+                console.log("로그아웃 상태 감지됨");
+                // 로그아웃 상태로 UI 초기화
+                loginLink.style.display = "block";
+                logoutMenu.style.display = "none";
+                userProfile.textContent = "";
+                updateMyInfoSection(null);
+            }
+        } catch (error) {
+            console.error("로그인 상태 체크 중 에러:", error);
+            // 에러 발생 시 로그아웃 상태로 초기화
+            handleLogout();
+        }
+    }
 });
