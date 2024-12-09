@@ -75,7 +75,7 @@ async def read_root(request: Request):
     })
 
 def setup_qa_system():
-    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질 이전 대화 내용과 관련이 있을 수 있습니다. 
+    contextualize_q_system_prompt = """이전 대화 내용과 최신 사용자 질문이 있을 때, 이 질 ���전 대화 내용과 관련이 있을 수 있습니다. 
     이런 경우, 대화 알 필요 없이 독립적으로 이해할 수 있는 질문으로 바꾸세요. 
     질문에 답할 필요는 없고, 필요하다면 그저 다시 구성하거나 그대로 두세요.
     모든 응답은 반드시 한국어로 작성해야 합니다."""
@@ -142,7 +142,7 @@ def create_rag_chain():
 
 def run_terminal_mode():
     print(f"{Fore.CYAN}=== 용인시 수지구 병원 정보 챗봇 ==={Style.RESET_ALL}")
-    print(f"{Fore.GREEN}상, 진료과목, 또는 원��시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}상, 진료과목, 또는 원시는 지역의 병원을 물어보세요!{Style.RESET_ALL}")
     print(f"{Fore.GREEN}예시: '가 아파요', '소아과 알려주세요', '상현동 병원 알려주세요'{Style.RESET_ALL}")
     
     try:
@@ -214,57 +214,45 @@ async def kakao_login(token: KakaoToken):
         raise HTTPException(status_code=400, detail=str(e))
 @app.get("/oauth")
 async def kakao_oauth(request: Request, code: str = None):
-    print(f"OAuth 콜백 수신 - 인증 코드: {code[:10]}..." if code else "인증 코드 없음")
-    
     try:
-        if not code:
-            print("인증 코드가 없음")
-            raise HTTPException(status_code=400, detail="인증 코드가 없습니다")
-
+        print("OAuth 콜백 수신 - 인증 코드:", code[:10] + "...")
+        
         # 카카오 토큰 요청
+        print("카카오 서버에 토큰 요청 시작")
         token_url = "https://kauth.kakao.com/oauth/token"
         data = {
             "grant_type": "authorization_code",
             "client_id": KAKAO_CLIENT_ID,
-            "redirect_uri": "https://bba-doc-1.onrender.com/oauth",
+            "redirect_uri": KAKAO_REDIRECT_URI,
             "code": code
         }
-        
-        print("카카오 서버에 토큰 요청 시작")
         token_response = requests.post(token_url, data=data)
-        print(f"토큰 요청 응답 상태 코드: {token_response.status_code}")
+        print("토큰 요청 응답 상태 코드:", token_response.status_code)
         
         if token_response.status_code != 200:
-            print(f"토큰 요청 실패 응답: {token_response.text}")
-            raise HTTPException(status_code=400, detail="토큰 요청 실패")
-        
-        token_data = token_response.json()
-        access_token = token_data.get("access_token")
-        
-        if not access_token:
-            print("액세스 토큰이 응답에 없음")
-            raise HTTPException(status_code=400, detail="액세스 토큰이 없습니다")
+            print("토큰 요청 실패:", token_response.text)
+            raise HTTPException(status_code=400, detail="토큰 발급 실패")
             
+        access_token = token_response.json().get("access_token")
         print("액세스 토큰 발급 성공")
-        
+
         # 사용자 정보 요청
+        print("사용자 정보 요청 시작")
         user_url = "https://kapi.kakao.com/v2/user/me"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
         }
-        
-        print("사용자 정보 요청 시작")
         user_response = requests.get(user_url, headers=headers)
-        print(f"사용자 정보 요청 응답 상태 코드: {user_response.status_code}")
+        print("사용자 정보 요청 응답 상태 코드:", user_response.status_code)
         
         if user_response.status_code != 200:
-            print(f"사용자 정보 요청 실패 응답: {user_response.text}")
-            raise HTTPException(status_code=400, detail="사용자 정보 요청 실패")
+            print("사용자 정보 요청 실패:", user_response.text)
+            raise HTTPException(status_code=400, detail="사용자 정보 조회 실패")
             
         user_info = user_response.json()
         print("사용자 정보 조회 성공")
-        
+
         # OAuth 콜백 페이지 렌더링
         return templates.TemplateResponse(
             "oauth_callback.html",
@@ -273,13 +261,13 @@ async def kakao_oauth(request: Request, code: str = None):
                 "token": access_token,
                 "user_info": {
                     "id": user_info.get("id"),
-                    "nickname": user_info.get("properties", {}).get("nickname")
+                    "nickname": user_info.get("properties", {}).get("nickname"),
+                    "profile_image": user_info.get("properties", {}).get("profile_image")
                 }
             }
         )
-        
     except Exception as e:
-        print(f"OAuth 처리 중 에러 발생: {str(e)}")
+        print("OAuth 처리 중 에러:", str(e))
         return templates.TemplateResponse(
             "oauth_callback.html",
             {
@@ -345,7 +333,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         })
                         
             except asyncio.TimeoutError:
-                # 타임아웃 발생 시 ping 전송
+                # 타임아웃 발생 ��� ping 전송
                 try:
                     await websocket.send_json({"type": "ping"})
                 except:
