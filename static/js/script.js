@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (userInfo) {
             profileImage.src = userInfo.thumbnail_image || '/api/placeholder/150/150';
-            profileName.textContent = userInfo.nickname || '사��';
+            profileName.textContent = userInfo.nickname || '사용자';
             profileEmail.textContent = userInfo.email || '';
         } else {
             profileImage.src = '/api/placeholder/150/150';
@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 setTimeout(connectWebSocket, RECONNECT_DELAY);
                 reconnectAttempts++;
             } else {
-                addMessage("서버와의 연결이 끊어졌습니다. 페���지를 새로고침해주세요.", "error");
+                addMessage("서버와의 연결이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
             }
         };
         
@@ -643,7 +643,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            console.log("카카오맵 초기화 시작");
+            console.log("���카오맵 초기화 시작");
             const mapContainer = document.getElementById("map");
             const options = {
                 center: new kakao.maps.LatLng(37.3218778, 127.1086078),  // 수지구 좌심 좌표
@@ -670,7 +670,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         image: markerImage
                     });
                     
-                    // 현재 위치 인포윈도우
+                    // 현재 위치 인���윈도우
                     const infowindow = new kakao.maps.InfoWindow({
                         content: '<div style="padding:5px;">현재 위치</div>'
                     });
@@ -780,4 +780,102 @@ document.addEventListener("DOMContentLoaded", function () {
         // 스크롤을 최하단으로 이동
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+
+    // 카카오 초기화 및 상태 관리를 위한 클래스
+    class KakaoManager {
+        constructor() {
+            this.initialized = false;
+            this.initializeKakao();
+            this.setupEventListeners();
+        }
+
+        initializeKakao() {
+            try {
+                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+                if (!Kakao.isInitialized()) {
+                    Kakao.init(kakaoAppKey);
+                    this.initialized = true;
+                    console.log("카카오 초기화 성공");
+                }
+            } catch (error) {
+                console.error("카카오 초기화 실패:", error);
+                this.showError("카카오 초기화에 실패했습니다. 페이지를 새로고침해주세요.");
+            }
+        }
+
+        setupEventListeners() {
+            // 페이지 포커스 얻을 때마다 토큰 유효성 검사
+            window.addEventListener('focus', () => this.validateToken());
+            
+            // 주기적으로 토큰 유효성 검사 (5분마다)
+            setInterval(() => this.validateToken(), 300000);
+        }
+
+        async validateToken() {
+            try {
+                const token = Kakao.Auth.getAccessToken();
+                if (!token) return;
+
+                const status = await Kakao.Auth.getStatusInfo();
+                if (!status.status === 'connected') {
+                    console.log("토큰 만료 또는 유효하지 않음");
+                    this.handleLogout();
+                }
+            } catch (error) {
+                console.error("토큰 검증 실패:", error);
+                this.handleLogout();
+            }
+        }
+
+        handleLogout() {
+            if (Kakao.Auth.getAccessToken()) {
+                Kakao.Auth.logout()
+                    .then(() => {
+                        CookieUtil.deleteCookie('userInfo');
+                        localStorage.removeItem('kakao_access_token');
+                        loginLink.style.display = "block";
+                        logoutMenu.style.display = "none";
+                        userProfile.innerHTML = '';
+                        console.log("로그아웃 성공");
+                    })
+                    .catch(error => {
+                        console.error("로그아웃 실패:", error);
+                    });
+            }
+        }
+
+        showError(message) {
+            const errorModal = document.getElementById('loginErrorModal');
+            const errorMessage = errorModal.querySelector('p');
+            errorMessage.textContent = message;
+            errorModal.style.display = "block";
+        }
+    }
+
+    // 문서 로드 완료 시 실행
+    document.addEventListener("DOMContentLoaded", function () {
+        // 카카오 매니저 인스턴스 생성
+        const kakaoManager = new KakaoManager();
+
+        // 로그인 버튼 이벤트 리스너
+        loginLink.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (!kakaoManager.initialized) {
+                kakaoManager.showError("카카오 초기화가 필요합니다. 페이지를 새로고침해주세요.");
+                return;
+            }
+            
+            try {
+                Kakao.Auth.authorize({
+                    redirectUri: 'https://bba-doc-1.onrender.com/oauth',
+                    scope: 'profile_nickname, profile_image'
+                });
+            } catch (error) {
+                console.error("카카오 로그인 에러:", error);
+                kakaoManager.showError("로그인 중 오류가 발생했습니다.");
+            }
+        });
+
+        // 나머지 코드는 그대로 유지...
+    });
 });
