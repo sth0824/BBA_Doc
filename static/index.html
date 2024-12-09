@@ -19,13 +19,22 @@
             const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
             console.log("카카오 앱 키:", kakaoAppKey);  // 디버깅용
             
-            if (!Kakao.isInitialized()) {
-                try {
+            try {
+                if (!Kakao.isInitialized()) {
                     Kakao.init(kakaoAppKey);
-                    console.log("카카오 초기화 성공");
-                } catch (error) {
-                    console.error("카카오 초기화 실패:", error);
+                    console.log("카카오 초기화 성공:", Kakao.isInitialized());
                 }
+                
+                // 초기 로그인 상태 확인
+                if (Kakao.Auth.getAccessToken()) {
+                    console.log("액세스 토큰 존재");
+                } else {
+                    console.log("액세스 토큰 없음");
+                    // 로컬 스토리지의 토큰 제거
+                    localStorage.removeItem('kakao_access_token');
+                }
+            } catch (error) {
+                console.error("카카오 초기화 오류:", error);
             }
         });
     </script>
