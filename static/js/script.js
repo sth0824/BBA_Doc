@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             console.log("Max reconnection attempts reached");
             updateConnectionStatus("연결 실패", "#f44336");
-            appendMessage("서버와의 연결이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
+            appendMessage("서버와의 연결이 끊어졌습��다. 페이지를 새로고침해주세요.", "error");
         }
     }
 
@@ -533,7 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병원 검���
+            // 주변 병원 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -671,6 +671,42 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 맵 ��기화 시작
+    // 맵 기화 시작
     initializeMap();
+
+    // 메시지 전송 함수
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message && ws && ws.readyState === WebSocket.OPEN) {
+            console.log("메시지 전송 시도:", message);
+            
+            // 사용자 메시지 표시
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+            chatMessages.appendChild(messageDiv);
+            
+            // 웹소켓으로 메시지 전송
+            ws.send(JSON.stringify({
+                type: "message",
+                message: message
+            }));
+            
+            // 입력창 초기화 및 스크롤
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 로딩 표시
+            loadingIndicator.style.display = "block";
+        }
+    }
+
+    // 이벤트 리스너 추가
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
 });
