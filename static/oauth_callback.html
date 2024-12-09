@@ -4,27 +4,33 @@
 <head>
     <title>로그인 처리 중...</title>
     <script>
-        // @ts-nocheck
         window.onload = function() {
             try {
                 console.log("OAuth 콜백 페이지 로드됨");
                 
-                // 서버에서 전달된 데이터
-                const token = "{{ token or '' }}";
-                const userInfo = {{ user_info|tojson|safe or '{}' }};
+                // 서버에서 전달된 데이터를 직접 변수에 할당
+                const serverData = {
+                    token: '{{ token }}',
+                    userInfo: {
+                        id: '{{ user_info.id }}',
+                        nickname: '{{ user_info.nickname }}'
+                    }
+                };
                 
-                if (token && Object.keys(userInfo).length > 0) {
-                    // 토큰과 사용자 정보가 있는 경우에만 저장
-                    localStorage.setItem('kakao_access_token', token);
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
-                    console.log("로그인 정보 저장 성공");
+                console.log("서버에서 받은 데이터:", serverData);
+
+                if (serverData.token && serverData.userInfo.id) {
+                    // 로컬 스토리지에 저장
+                    localStorage.setItem('kakao_access_token', serverData.token);
+                    localStorage.setItem('user_info', JSON.stringify(serverData.userInfo));
+                    console.log("로그인 정보 저장 완료");
                     
-                    // 메인 페이지로 이동
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 500);
                 } else {
-                    console.error("로그인 정보 불완전");
+                    console.error("필수 정보 누락:", serverData);
+                    alert("로그인 처리 중 오류가 발생했습니다.");
                     window.location.href = '/';
                 }
             } catch (error) {
