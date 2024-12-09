@@ -110,55 +110,47 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 카카오 로그인 상태 확인 및 UI 업이트 함수
+    // 카카오 로그인 상태 확인 및 UI 업데이트 함수
     function updateLoginState() {
-        const token = localStorage.getItem('kakao_access_token');
-        if (token) {
-            try {
-                Kakao.Auth.setAccessToken(token);
-            } catch (error) {
-                console.error("카카오 토큰 설정 실패:", error);
-                localStorage.removeItem('kakao_access_token'); // 잘못된 토큰 제거
+        try {
+            // 토큰이 있는 경우에만 상태 확인
+            if (Kakao.Auth.getAccessToken()) {
+                Kakao.API.request({
+                    url: '/v2/user/me',
+                })
+                .then(function(response) {
+                    console.log("사용자 정보:", response);
+                    
+                    // 프로필 정보 업데이트
+                    const nickname = response.properties.nickname;
+                    const profileImage = response.properties.profile_image;
+                    
+                    userProfile.innerHTML = `
+                        <img src="${profileImage}" alt="프로필" class="profile-image">
+                        <span>${nickname}</span>
+                    `;
+                    
+                    // UI 상태 변경
+                    loginLink.style.display = "none";
+                    logoutMenu.style.display = "block";
+                    
+                    // 사용자 정보 저장
+                    CookieUtil.setCookie('userInfo', {
+                        nickname: nickname,
+                        profileImage: profileImage
+                    }, 7);
+                })
+                .catch(function(error) {
+                    console.error("사용자 정보 요청 실패:", error);
+                    handleLogout(); // 에러 발생시 로그아웃 처리
+                });
+            } else {
+                handleLogout(); // 토큰이 없으면 로그아웃 상태로 처리
             }
+        } catch (error) {
+            console.error("로그인 상태 확인 실패:", error);
+            handleLogout(); // 에러 발생시 로그아웃 처리
         }
-
-        Kakao.Auth.getStatusInfo()
-            .then(function(res) {
-                if (res.status === 'connected') {
-                    // 사용자 정보 청
-                    Kakao.API.request({
-                        url: '/v2/user/me',
-                    })
-                    .then(function(response) {
-                        console.log("사용자 정보:", response);
-                        
-                        // 프로필 정보 데이트
-                        const nickname = response.properties.nickname;
-                        const profileImage = response.properties.profile_image;
-                        
-                        userProfile.innerHTML = `
-                            <img src="${profileImage}" alt="프로필" class="profile-image">
-                            <span>${nickname}</span>
-                        `;
-                        
-                        // UI 상태 변경
-                        loginLink.style.display = "none";
-                        logoutMenu.style.display = "block";
-                        
-                        // 사용자 정보 장
-                        CookieUtil.setCookie('userInfo', {
-                            nickname: nickname,
-                            profileImage: profileImage
-                        }, 7);
-                    })
-                    .catch(function(error) {
-                        console.error("사용자 정보 요청 실패:", error);
-                    });
-                }
-            })
-            .catch(function(error) {
-                console.error("로그인 상 확인 실패:", error);
-            });
     }
 
     // FavoritesManager 클래스의 메서드들
@@ -541,7 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병원 검색
+            // 주변 병원 검���
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -679,6 +671,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 맵 초기화 시작
+    // 맵 ��기화 시작
     initializeMap();
 });
