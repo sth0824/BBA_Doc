@@ -446,21 +446,32 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Received message:", event.data);  // 메시지 수신 디버깅
             try {
                 const response = JSON.parse(event.data);
+                
+                // ping/pong 메시지는 무시
+                if (response.type === "pong") {
+                    return;
+                }
+                
                 if (response.error) {
                     console.error("Server error:", response.error);
-                    addMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "error");
-                } else {
+                    addMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "bot");
+                } else if (response.answer) {  // 챗봇 응답 처리
                     addMessage(response.answer, "bot");
-                    if (response.context) {
-                        console.log("Context:", response.context);
-                    }
                 }
+                
+                // 로딩 표시 숨기기
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = "none";
+                }
+                
+                // 스크롤을 최하단으로 이동
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
             } catch (error) {
                 console.error("Error parsing message:", error);
-                addMessage("메시지 처리 중 오류가 발생했습니다.", "error");
+                addMessage("메시지 처리 중 오류가 발생했습니다.", "bot");
             }
-            const loadingIndicator = document.getElementById('loading-indicator');
-            if (loadingIndicator) loadingIndicator.style.display = "none";
         };
 
         ws.onclose = function() {
@@ -483,7 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             console.log("Max reconnection attempts reached");
             updateConnectionStatus("연결 실패", "#f44336");
-            appendMessage("서버와의 연결이 끊어졌습��다. 페이지를 새로고침해주세요.", "error");
+            appendMessage("서버와의 연결이 끊어졌습다. 페이지를 새로고침해주세요.", "error");
         }
     }
 
@@ -709,4 +720,20 @@ document.addEventListener("DOMContentLoaded", function () {
             sendMessage();
         }
     });
+
+    // 메시지 추가 함수 (이미 있다면 수정, 없다면 추가)
+    function addMessage(content, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = content;
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        
+        // 스크롤을 최하단으로 이동
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 });
