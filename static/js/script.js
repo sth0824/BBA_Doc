@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const profileName = document.getElementById('profile-name');
         const profileEmail = document.getElementById('profile-email');
 
-        // 카카오 로그인 정보가 있는 경우
+        // 카카오 로그��� 정보가 있는 경우
         if (Kakao.Auth.getAccessToken()) {
             Kakao.API.request({
                 url: '/v2/user/me',
@@ -645,7 +645,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 병원 정보 표시
     function displayHospitals(hospitals) {
+        console.log('displayHospitals 시작:', hospitals.length, '개의 병원');
         clearMarkers(); // 기존 마커 제거
+        console.log('기존 마커 제거 완료');
 
         const hospitalsGrid = document.querySelector(".hospitals-grid");
         hospitalsGrid.innerHTML = "";
@@ -678,29 +680,10 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             
             markers.push(marker);
-
-            // 마커 클릭 이벤트
-            kakao.maps.event.addListener(marker, "click", function () {
-                if (currentInfoWindow) {
-                    currentInfoWindow.close();
-                }
-                const infowindow = new kakao.maps.InfoWindow({
-                    content: `
-                        <div style="padding:10px;min-width:200px;">
-                            <h4 style="margin-bottom:5px;">${hospital.place_name}</h4>
-                            <p style="margin:0;font-size:13px;">
-                                ${hospital.road_address_name || hospital.address_name}
-                            </p>
-                            <p style="margin:5px 0 0;font-size:13px;">
-                                ${hospital.phone || '전화번호 없음'}
-                            </p>
-                        </div>
-                    `
-                });
-                infowindow.open(map, marker);
-                currentInfoWindow = infowindow;
-            });
+            console.log('마커 추가됨:', hospital.place_name);
         });
+        
+        console.log('총 마커 수:', markers.length);
 
         favoritesManager.initializeEventListeners();
         favoritesManager.updateFavoriteButtons();
@@ -709,31 +692,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 지도 이벤트 리스너 추가
     kakao.maps.event.addListener(map, 'zoom_changed', function() {
+        console.log('줌 변경 이벤트 발생');
+        console.log('현재 마커 수:', markers.length);
         markers.forEach(marker => {
             marker.setMap(map);
         });
-        if (currentLocationMarker) {
-            currentLocationMarker.setMap(map);
-        }
+        console.log('마커 재설정 완료');
     });
 
     kakao.maps.event.addListener(map, 'dragend', function() {
+        console.log('드래그 종료 이벤트 발생');
+        console.log('현재 마커 수:', markers.length);
         markers.forEach(marker => {
             marker.setMap(map);
         });
-        if (currentLocationMarker) {
-            currentLocationMarker.setMap(map);
-        }
+        console.log('마커 재설정 완료');
     });
 
     // bounds_changed 이벤트 추가
     kakao.maps.event.addListener(map, 'bounds_changed', function() {
+        console.log('경계 변경 이벤트 발생');
+        console.log('현재 마커 수:', markers.length);
         markers.forEach(marker => {
             marker.setMap(map);
         });
-        if (currentLocationMarker) {
-            currentLocationMarker.setMap(map);
-        }
+        console.log('마커 재설정 완료');
     });
 
     // 위치 기반 서비스
@@ -881,7 +864,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         ps.keywordSearch(searchTerm, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
-                // 현재 위치 마커 표시
+                // 현�� 위치 마커 표시
                 const currentLocationMarker = new kakao.maps.Marker({
                     map: map,
                     position: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
