@@ -85,20 +85,20 @@ nav {
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    border-radius: 6px;
-    background-color: transparent;
+    text-decoration: none;
+    color: white;
 }
 
-#login-link img.kakao-login-image {
-    width: 20px;
-    height: 20px;
+#profile-image {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    object-fit: cover;
 }
 
-#login-link img.profile-img {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+#login-text {
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .dropdown-content {
@@ -110,14 +110,6 @@ nav {
     box-shadow: var(--shadow);
     z-index: 1;
     border-radius: 5px;
-}
-
-.dropdown-content #user-profile {
-    display: block;
-    padding: 12px 16px;
-    border-bottom: 1px solid #eee;
-    color: var(--text-color);
-    font-weight: 500;
 }
 
 .dropdown-content a {
@@ -134,6 +126,20 @@ nav {
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+/* 챗카오 로그인 이미지 스타일 */
+.kakao-login-image {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.profile-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 /* 챗봇 컨테이너 스타일 */
@@ -1046,7 +1052,7 @@ footer {
     }
 }
 
-/* 스크롤바 스타��링 */
+/* 스크롤바 스타일링 */
 .my-hospitals::-webkit-scrollbar {
     width: 8px;
 }
