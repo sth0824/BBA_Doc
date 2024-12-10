@@ -1,12 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Kakao 초기화 함수
+    // Kakao 초기화 및 토큰 설정 함수
     function initializeKakao() {
-        if (!Kakao.isInitialized()) {
-            const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-            Kakao.init(kakaoAppKey);
+        try {
+            if (!Kakao.isInitialized()) {
+                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+                Kakao.init(kakaoAppKey);
+                console.log("카카오 초기화 완료");
+            }
+            
+            // 저장된 토큰이 있으면 설정
+            const savedToken = localStorage.getItem('kakao_access_token');
+            if (savedToken) {
+                Kakao.Auth.setAccessToken(savedToken);
+                console.log("저장된 토큰 설정 완료");
+                // 토큰 설정 후 즉시 로그인 상태 체크
+                updateLoginState();
+            }
+        } catch (error) {
+            console.error("카카오 초기화 중 에러:", error);
         }
     }
 
+    // 먼저 카카오 초기화 실행
     initializeKakao();
 
     // 기존 웹사이트 관련 변수들
@@ -191,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="no-favorites">
                         아직 즐겨찾기한 병원이 없습니다.
                         <br>
-                        병원 카드의 ���트 아이콘을 클클릭하여 즐겨찾기에 추가해보세요!
+                        병원 카드의 트 아이콘을 클클릭하여 즐겨찾기에 추가해보세요!
                     </div>`;
                 return;
             }
@@ -321,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     loginLink.style.display = "block";
                     logoutMenu.style.display = "none";
                     userProfile.innerHTML = '';
-                    console.log("로그아웃 공");
+                    console.log("로��아웃 공");
                 })
                 .catch(function(error) {
                     console.error("로그아웃 패:", error);
