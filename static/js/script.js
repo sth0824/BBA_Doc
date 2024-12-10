@@ -681,6 +681,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // 마커 클릭 이벤트
             kakao.maps.event.addListener(marker, "click", function () {
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                }
                 const infowindow = new kakao.maps.InfoWindow({
                     content: `
                         <div style="padding:10px;min-width:200px;">
@@ -695,6 +698,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     `
                 });
                 infowindow.open(map, marker);
+                currentInfoWindow = infowindow;
             });
         });
 
@@ -702,6 +706,35 @@ document.addEventListener("DOMContentLoaded", function () {
         favoritesManager.updateFavoriteButtons();
         setupSlider();
     }
+
+    // 지도 이벤트 리스너 추가
+    kakao.maps.event.addListener(map, 'zoom_changed', function() {
+        markers.forEach(marker => {
+            marker.setMap(map);
+        });
+        if (currentLocationMarker) {
+            currentLocationMarker.setMap(map);
+        }
+    });
+
+    kakao.maps.event.addListener(map, 'dragend', function() {
+        markers.forEach(marker => {
+            marker.setMap(map);
+        });
+        if (currentLocationMarker) {
+            currentLocationMarker.setMap(map);
+        }
+    });
+
+    // bounds_changed 이벤트 추가
+    kakao.maps.event.addListener(map, 'bounds_changed', function() {
+        markers.forEach(marker => {
+            marker.setMap(map);
+        });
+        if (currentLocationMarker) {
+            currentLocationMarker.setMap(map);
+        }
+    });
 
     // 위치 기반 서비스
     if (navigator.geolocation) {
