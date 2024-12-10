@@ -900,31 +900,32 @@ document.addEventListener("DOMContentLoaded", function () {
             const token = localStorage.getItem('kakao_access_token');
             const userInfoStr = localStorage.getItem('user_info');
             
-            console.log("로그인 상태 체크:", {
-                hasToken: !!token,
-                hasUserInfo: !!userInfoStr
-            });
-
             if (token && userInfoStr) {
                 const userInfo = JSON.parse(userInfoStr);
-                console.log("사용자 정보:", userInfo);
                 
                 // UI 업데이트
                 loginLink.style.display = "none";
                 logoutMenu.style.display = "block";
                 
-                if (userInfo.nickname) {
-                    userProfile.textContent = userInfo.nickname;
-                }
+                // 프로필 정보 업데이트
+                userProfile.innerHTML = `
+                    <img src="${userInfo.profile_image}" alt="프로필" class="profile-image" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
+                    <span>${userInfo.nickname}</span>
+                `;
                 
                 // 내 정보 섹션 업데이트
                 updateMyInfoSection(userInfo);
             } else {
-                console.log("로그아웃 상태");
                 // 로그아웃 상태 UI
                 loginLink.style.display = "block";
                 logoutMenu.style.display = "none";
-                userProfile.textContent = "";
+                loginLink.innerHTML = `
+                    <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
+                         alt="카카오 로그인" 
+                         class="kakao-login-image">
+                    로그인
+                `;
+                userProfile.innerHTML = "";
                 updateMyInfoSection(null);
             }
         } catch (error) {
