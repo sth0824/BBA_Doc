@@ -14,18 +14,20 @@
                 
                 console.log("서버에서 받은 데이터:", serverData);
                 console.log("사용자 정보:", serverData.user_info);
-                console.log("토큰:", serverData.token);
 
                 if (serverData.token && serverData.user_info) {
-                    // 로컬 스토리지에 저장할 때 필요한 모든 사용자 정보를 포함
-                    localStorage.setItem('kakao_access_token', serverData.token);
-                    localStorage.setItem('user_info', JSON.stringify({
+                    // 사용자 정보가 이미 필요한 형태로 오므로 그대로 저장
+                    const userInfo = {
                         id: serverData.user_info.id,
-                        nickname: serverData.user_info.properties.nickname,
-                        profile_image: serverData.user_info.properties.profile_image
-                    }));
+                        nickname: serverData.user_info.nickname,
+                        profile_image: serverData.user_info.profile_image
+                    };
+
+                    // 로컬 스토리지에 저장
+                    localStorage.setItem('kakao_access_token', serverData.token);
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
                     
-                    console.log("로그인 정보 저장 완료");
+                    console.log("저장된 사용자 정보:", userInfo);
                     
                     // 상태 메시지 업데이트
                     document.getElementById('status').textContent = '로그인 정보 저장 완료';
