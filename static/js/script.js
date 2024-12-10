@@ -1,47 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM 로드됨 - 초기화 시작");
-    
-    // Kakao 초기화 및 토큰 설정 함수
-    async function initializeKakao() {
-        try {
-            // 카카오 초기화 상태 확인
-            console.log("카카오 초기화 상태:", Kakao.isInitialized());
-            
-            if (!Kakao.isInitialized()) {
-                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-                Kakao.init(kakaoAppKey);
-                console.log("카카오 새로 초기화됨");
-            }
-            
-            // 저장된 토큰 확인
-            const savedToken = localStorage.getItem('kakao_access_token');
-            console.log("저장된 토큰 존재:", !!savedToken);
-            
-            if (savedToken) {
-                Kakao.Auth.setAccessToken(savedToken);
-                console.log("토큰 설정됨:", savedToken);
-                
-                // 토큰 유효성 검증
-                const status = await Kakao.Auth.getStatus();
-                console.log("토큰 상태:", status);
-                
-                if (status.status === 'connected') {
-                    console.log("유효한 토큰, 로그인 상태 업데이트 시작");
-                    updateLoginState();
-                } else {
-                    console.log("유효하지 않은 토큰, 로그아웃 처리");
-                    handleLogout();
-                }
-            } else {
-                console.log("저장된 토큰 없음");
-            }
-        } catch (error) {
-            console.error("카카오 초기화 중 에러:", error);
-            console.error(error.stack);
+    // Kakao 초기화 함수
+    function initializeKakao() {
+        if (!Kakao.isInitialized()) {
+            const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+            Kakao.init(kakaoAppKey);
         }
     }
 
-    // 초기화 실행
     initializeKakao();
 
     // 기존 웹사이트 관련 변수들
@@ -145,36 +110,49 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 카카오 로그인 상태 확인 및 UI 업데이트 함수
+    // 카카오 로그인 상태 확인 및 UI 업이트 함수
     function updateLoginState() {
         try {
-            const token = Kakao.Auth.getAccessToken();
-            if (!token) {
-                console.log("토큰 없음 - 로그아웃 상태");
-                loginLink.style.display = 'block';
-                logoutMenu.style.display = 'none';
-                updateMyInfoSection(null);
-                return;
-            }
-
-            Kakao.API.request({
-                url: '/v2/user/me',
-                success: function(response) {
-                    console.log("사용자 정보 조회 성공");
-                    const userInfo = response.kakao_account;
-                    loginLink.style.display = 'none';
-                    logoutMenu.style.display = 'block';
-                    updateMyInfoSection(userInfo);
-                },
-                fail: function(error) {
-                    console.error("사용자 정보 요청 실패:", error);
-                    // 토큰이 유효하지 않은 경우 로그아웃 처리
-                    handleLogout();
-                }
-            });
+            Kakao.Auth.getStatusInfo()
+                .then(function(res) {
+                    if (res.status === 'connected') {
+                        // 사용자 정보 요청
+                        Kakao.API.request({
+                            url: '/v2/user/me',
+                        })
+                        .then(function(response) {
+                            console.log("사용자 정보:", response);
+                            
+                            // 프로필 정보 업데이트
+                            const nickname = response.properties.nickname;
+                            const profileImage = response.properties.profile_image;
+                            
+                            userProfile.innerHTML = `
+                                <img src="${profileImage}" alt="프로필" class="profile-image">
+                                <span>${nickname}</span>
+                            `;
+                            
+                            // UI 상태 변경
+                            loginLink.style.display = "none";
+                            logoutMenu.style.display = "block";
+                            
+                            // 사용자 정보 저장
+                            CookieUtil.setCookie('userInfo', {
+                                nickname: nickname,
+                                profileImage: profileImage
+                            }, 7);
+                        })
+                        .catch(function(error) {
+                            console.error("사용자 정보 요청 실패:", error);
+                        });
+                    }
+                })
+                .catch(function(error) {
+                    console.error("로그인 상태 확인 실패:", error);
+                });
         } catch (error) {
-            console.error("로그인 상태 업데이트 중 오류:", error);
-            handleLogout();
+            console.error("로그인 상태 체크 중 에러:", error);
+            console.error(error.stack);
         }
     }
 
@@ -305,13 +283,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // 카카오 로그인 관련 함수들
     loginLink.addEventListener("click", function(e) {
         e.preventDefault();
-        console.log("로그인 버튼 클릭됨");
+        console.log("로그인 시도");  // 디버깅용
         
         try {
-            console.log("카카오 인증 시도");
             Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image'
+                scope: 'profile_nickname, profile_image, account_email'
             });
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
@@ -321,29 +298,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 로그아웃 처리
     function handleLogout() {
-        console.log("로그아웃 처리 시작");
-        try {
-            if (Kakao.Auth.getAccessToken()) {
-                Kakao.Auth.logout()
-                    .then(() => {
-                        console.log("카카오 로그아웃 성공");
-                        // 로컬 스토리지 클리어
-                        localStorage.removeItem('kakao_access_token');
-                        localStorage.removeItem('user_info');
-                        
-                        // UI 초기화
-                        loginLink.style.display = "block";
-                        logoutMenu.style.display = "none";
-                        userProfile.textContent = "";
-                        updateMyInfoSection(null);
-                    })
-                    .catch(error => {
-                        console.error("카카오 로그아웃 실패:", error);
-                    });
-            }
-        } catch (error) {
-            console.error("로그아웃 처리 중 에러:", error);
+        if (Kakao.Auth.getAccessToken()) {
+            Kakao.Auth.logout();
         }
+        loginLink.innerHTML = `
+            <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
+                 alt="카카오 로그인" 
+                 class="kakao-login-image">
+            로그인
+        `;
+        logoutMenu.style.display = "none";
+        userProfile.textContent = "";
+        myInfoModal.style.display = "none";
+        
+        // 내 정보 섹션 초기화
+        updateMyInfoSection(null);
     }
 
     logoutLink.addEventListener("click", function(e) {
@@ -356,10 +325,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     loginLink.style.display = "block";
                     logoutMenu.style.display = "none";
                     userProfile.innerHTML = '';
-                    console.log("로그아웃 공");
+                    console.log("로그아웃 성공");
                 })
                 .catch(function(error) {
-                    console.error("로그아웃 패:", error);
+                    console.error("로그아웃 실패:", error);
                 });
         }
     });
@@ -392,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (userInfo) {
             profileImage.src = userInfo.thumbnail_image || '/api/placeholder/150/150';
-            profileName.textContent = userInfo.nickname || '사용자';
+            profileName.textContent = userInfo.nickname || '사용';
             profileEmail.textContent = userInfo.email || '';
         } else {
             profileImage.src = '/api/placeholder/150/150';
@@ -432,100 +401,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let ws = null;
     let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 5;
-    const RECONNECT_DELAY = 3000;
-    const PING_INTERVAL = 30000; // 30초마다 ping
-    let pingInterval;
-
-    // 연결 상태 업데이트 함수 추가
-    function updateConnectionStatus(message, color) {
-        const connectionStatus = document.getElementById('connection-status');
-        if (connectionStatus) {
-            connectionStatus.textContent = message;
-            connectionStatus.style.color = color;
-        }
-    }
-
-    // 웹소켓 연결 함수 수정
-    function connectWebSocket() {
-        console.log("Attempting to connect WebSocket...");
-        
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-        
-        ws = new WebSocket(wsUrl);
-        
-        ws.onopen = function() {
-            console.log("WebSocket Connected");
-            updateConnectionStatus("연결됨", "#4CAF50");
-            
-            // 입력 필드 활성화
-            chatInput.disabled = false;
-            chatSend.disabled = false;
-            
-            // Ping 인터벌 설정
-            if (pingInterval) clearInterval(pingInterval);
-            pingInterval = setInterval(() => {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ type: "ping" }));
-                }
-            }, PING_INTERVAL);
-        };
-        
-        ws.onmessage = function(event) {
-            console.log("Received message:", event.data);
-            
-            try {
-                const response = JSON.parse(event.data);
-                
-                if (response.type === "pong") return;
-                
-                if (response.type === "error") {
-                    addMessage(response.message || "오류가 발생했습니다.", "error");
-                } else if (response.answer) {
-                    addMessage(response.answer, "bot");
-                }
-                
-                // 로딩 표시 숨기기
-                loadingIndicator.style.display = "none";
-                
-                // 스크롤
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-            } catch (error) {
-                console.error("Error parsing message:", error);
-                addMessage("메시지 처리 중 오류가 발생했습니다.", "error");
-            }
-        };
-        
-        ws.onclose = function(event) {
-            console.log("WebSocket Disconnected", event.code, event.reason);
-            updateConnectionStatus("연결 끊어졌습니다.", "#FF0000");
-            
-            // 입력 필드 비활성화
-            chatInput.disabled = true;
-            chatSend.disabled = true;
-            
-            // Ping 인터벌 제거
-            if (pingInterval) clearInterval(pingInterval);
-            
-            // 재연결 시도
-            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                setTimeout(connectWebSocket, RECONNECT_DELAY);
-                reconnectAttempts++;
-            } else {
-                addMessage("서버와의 연결이 끊어졌습니다. 페이지를 새로고침해주세요.", "error");
-            }
-        };
-        
-        ws.onerror = function(error) {
-            console.error("WebSocket Error:", error);
-            updateConnectionStatus("연결 오류", "#FF0000");
-        };
-    }
-
-    // 페이지 로드시 WebSocket 연결 시작
-    window.addEventListener('load', connectWebSocket);
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 3000;
 
     // 채팅창 토글 기능
     chatToggle.addEventListener('click', function() {
@@ -538,7 +415,140 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 웹카오맵 기화
+    // 웹소켓 연결 함수
+    function connectWebSocket() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            console.log('WebSocket already connected');
+            return;
+        }
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+        ws = new WebSocket(wsUrl);
+        updateConnectionStatus('연결 중...', '#FFA500');
+        
+        ws.onopen = function() {
+            console.log('WebSocket Connected');
+            updateConnectionStatus('연결됨', '#4CAF50');
+            enableChatInterface();
+            reconnectAttempts = 0;
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket Disconnected');
+            disableChatInterface();
+            handleReconnect();
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket Error:', error);
+            updateConnectionStatus('연결 오류', '#FF0000');
+            disableChatInterface();
+        };
+
+        ws.onmessage = function(event) {
+            try {
+                const response = JSON.parse(event.data);
+                hideLoading();
+                enableChatInterface();
+                
+                if (response.answer) {
+                    addMessage(response.answer, 'bot');
+                }
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error('Error processing message:', error);
+                hideLoading();
+                enableChatInterface();
+                addMessage('죄송합니다. 오류가 발생했습니다.', 'bot');
+            }
+        };
+    }
+
+    function updateConnectionStatus(message, color) {
+        connectionStatus.textContent = message;
+        connectionStatus.style.color = color;
+    }
+
+    function handleReconnect() {
+        if (reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            updateConnectionStatus(`재연결 시도 중... (${reconnectAttempts}/${maxReconnectAttempts})`, '#FFA500');
+            setTimeout(connectWebSocket, reconnectDelay);
+        } else {
+            updateConnectionStatus('연결 실패', '#FF0000');
+            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 새로고침해 주세요.', 'bot');
+        }
+    }
+
+    function enableChatInterface() {
+        chatInput.disabled = false;
+        chatSend.disabled = false;
+        chatInput.placeholder = "메시지를 입력하세요...";
+    }
+
+    function disableChatInterface() {
+        chatInput.disabled = true;
+        chatSend.disabled = true;
+        chatInput.placeholder = "연결 중...";
+    }
+
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+        chatInput.disabled = true;
+        chatSend.disabled = true;
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        chatInput.disabled = false;
+        chatSend.disabled = false;
+    }
+
+    // 메시지 전송 함수
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message && ws && ws.readyState === WebSocket.OPEN) {
+            addMessage(message, 'user');
+            
+            try {
+                ws.send(JSON.stringify({ message: message }));
+                chatInput.value = '';
+                showLoading();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage('메시지 전송에 실패했습니다.', 'bot');
+                hideLoading();
+            }
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    // 메시지 추가 함수
+    function addMessage(content, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = content;
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+    }
+
+    // 채팅 이벤트 리스너
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // 카카오맵 기화
     const mapContainer = document.getElementById("map");
     const options = {
         center: new kakao.maps.LatLng(33.450701, 126.570667),
@@ -570,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const ps = new kakao.maps.services.Places();
             
-            // 주변 병원 검색
+            // 주변 병 검색
             ps.keywordSearch(
                 "병원",
                 function (data, status) {
@@ -678,333 +688,166 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 웹카카오맵 기화 함수
-    function initializeMap() {
-        try {
-            if (typeof kakao === 'undefined' || !kakao.maps) {
-                console.log("카카오맵 SDK 로딩 대기 중...");
-                setTimeout(initializeMap, 100);
-                return;
-            }
+    // 웹소켓 연결 초기화
+    connectWebSocket();
 
-            console.log("카카오맵 초기화 시작");
+    // 전역 변수 선언
+    let markers = [];
+    let currentInfoWindow = null;
+    let userLocation = null; // 사용자 위치 저장 변수
+
+    // 사용자 위치 가져오기
+    function getUserLocation() {
+        return new Promise((resolve, reject) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        console.log('사용자 위치:', userLocation);
+                        resolve(userLocation);
+                    },
+                    (error) => {
+                        console.error('위치 가져오기 실패:', error);
+                        reject(error);
+                    }
+                );
+            } else {
+                reject(new Error('위치 서비스가 지원되지 않습니다.'));
+            }
+        });
+    }
+
+    // 검색 요소 가져오기
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-btn');
+
+    if (searchBtn && searchInput) {
+        // 검색 버튼 클릭 이벤트
+        searchBtn.addEventListener('click', async function() {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                try {
+                    // 위치 정보가 없으면 가져오기
+                    if (!userLocation) {
+                        await getUserLocation();
+                    }
+                    searchByDepartment(keyword);
+                } catch (error) {
+                    alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
+                }
+            }
+        });
+
+        // 엔터키 검색 이벤트
+        searchInput.addEventListener('keypress', async function(e) {
+            if (e.key === 'Enter') {
+                const keyword = this.value.trim();
+                if (keyword) {
+                    try {
+                        if (!userLocation) {
+                            await getUserLocation();
+                        }
+                        searchByDepartment(keyword);
+                    } catch (error) {
+                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
+                    }
+                }
+            }
+        });
+    }
+
+    // 진료과목 검색 함수
+    function searchByDepartment(keyword) {
+        // 기존 마커 제거
+        markers.forEach(marker => marker.setMap(null));
+        markers = [];
+        
+        const ps = new kakao.maps.services.Places();
+        const searchTerm = keyword + " 병원";
+
+        // 검색 옵션 설정 (20km = 20000m)
+        const searchOption = {
+            location: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
+            radius: 20000,
+            sort: kakao.maps.services.SortBy.DISTANCE // 거리순 정렬
+        };
+
+        ps.keywordSearch(searchTerm, function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                // 현재 위치 마커 표시
+                const currentLocationMarker = new kakao.maps.Marker({
+                    map: map,
+                    position: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
+                    image: new kakao.maps.MarkerImage(
+                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                        new kakao.maps.Size(24, 35)
+                    )
+                });
+                markers.push(currentLocationMarker);
+
+                // 검색 결과 표시
+                displayHospitals(result);
+                
+                // 지도 범위 재설정
+                const bounds = new kakao.maps.LatLngBounds();
+                bounds.extend(new kakao.maps.LatLng(userLocation.lat, userLocation.lng)); // 현재 위치 포함
+                result.forEach(place => {
+                    bounds.extend(new kakao.maps.LatLng(place.y, place.x));
+                });
+                map.setBounds(bounds);
+                
+                // 지도 섹션으로 스크롤
+                const mapSection = document.getElementById('map-section');
+                if (mapSection) {
+                    mapSection.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            } else {
+                alert('검색 결과가 없습니다.');
+            }
+        }, searchOption);
+    }
+
+    // 초기 위치 정보 가져오기
+    getUserLocation().catch(error => {
+        console.error('초기 위치 정보 가져오기 실패:', error);
+    });
+
+    // 쿠키 설정 함수
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+    }
+
+    // 카카오 로그인 관련 설정
+    Kakao.Auth.setAccessToken(localStorage.getItem('kakao_access_token'));
+
+    // 카카오맵 기화 함수
+    function initializeMap() {
+        if (typeof kakao !== 'undefined' && kakao.maps) {
             const mapContainer = document.getElementById("map");
             const options = {
-                center: new kakao.maps.LatLng(37.3218778, 127.1086078),  // 수지구 좌심 좌표
-                level: 5
+                center: new kakao.maps.LatLng(33.450701, 126.570667),
+                level: 5,
             };
-            
             const map = new kakao.maps.Map(mapContainer, options);
-            
-            // 현재 위치 가져오기
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const locPosition = new kakao.maps.LatLng(lat, lon);
-                    
-                    // 현재 위치 마커 생성
-                    const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png';
-                    const imageSize = new kakao.maps.Size(24, 35);
-                    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
-                    
-                    const currentMarker = new kakao.maps.Marker({
-                        map: map,
-                        position: locPosition,
-                        image: markerImage
-                    });
-                    
-                    // 현재 위치 인포윈도우
-                    const infowindow = new kakao.maps.InfoWindow({
-                        content: '<div style="padding:5px;">현재 위치</div>'
-                    });
-                    infowindow.open(map, currentMarker);
-                    
-                    // 지도 중심 이동
-                    map.setCenter(locPosition);
-                    
-                    // 주변 병원 검색
-                    const ps = new kakao.maps.services.Places(map);
-                    ps.keywordSearch('병원', 
-                        function(data, status) {
-                            if (status === kakao.maps.services.Status.OK) {
-                                for (let i = 0; i < data.length; i++) {
-                                    const hospital = data[i];
-                                    const marker = new kakao.maps.Marker({
-                                        map: map,
-                                        position: new kakao.maps.LatLng(hospital.y, hospital.x)
-                                    });
-                                    
-                                    // 병원 정보 인포윈도우
-                                    const hospitalInfo = new kakao.maps.InfoWindow({
-                                        content: `<div style="padding:5px;width:200px;">
-                                                    <strong>${hospital.place_name}</strong><br>
-                                                    ${hospital.address_name}<br>
-                                                    ${hospital.phone || '전화번호 없음'}
-                                                </div>`
-                                    });
-                                    
-                                    // 마커 클릭 이벤트
-                                    kakao.maps.event.addListener(marker, 'click', function() {
-                                        hospitalInfo.open(map, marker);
-                                    });
-                                }
-                            }
-                        },
-                        {
-                            location: locPosition,
-                            radius: 5000,
-                            sort: kakao.maps.services.SortBy.DISTANCE
-                        }
-                    );
-                });
-            }
-            
-            console.log("카카오맵 초기화 완료");
-            
-        } catch (error) {
-            console.error("맵 초기화 중 오류:", error);
+            // 나머지 맵 관련 코드...
+        } else {
+            // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
             setTimeout(initializeMap, 100);
         }
     }
 
-    // 페이지 로드 시 지도 초기화
-    window.addEventListener('load', function() {
-        initializeMap();
-    });
-
-    // 메시지 전송 함수 수정
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (message && ws && ws.readyState === WebSocket.OPEN) {
-            // 사용자 메시지 표시
-            addMessage(message, "user");
-            
-            // 메시지 전송
-            try {
-                ws.send(JSON.stringify({
-                    type: "message",
-                    message: message
-                }));
-                
-                // 입력창 초기화
-                chatInput.value = '';
-                
-                // 로딩 표시
-                loadingIndicator.style.display = "block";
-                
-            } catch (error) {
-                console.error("Error sending message:", error);
-                addMessage("메시지 전송에 실패했습니다.", "error");
-            }
-        }
-    }
-
-    // 이벤트 리스너 추가
-    chatSend.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // 메시지 추가 함수 (이미 있다면 수정, 없다면 추가)
-    function addMessage(content, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}-message`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = content;
-        
-        messageDiv.appendChild(contentDiv);
-        chatMessages.appendChild(messageDiv);
-        
-        // 스크롤을 최하단으로 이동
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // 카카오 초기화 및 상태 관리를 위한 클래스
-    class KakaoManager {
-        constructor() {
-            this.initialized = false;
-            this.initializeKakao();
-            this.setupEventListeners();
-        }
-
-        initializeKakao() {
-            try {
-                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-                if (!Kakao.isInitialized()) {
-                    Kakao.init(kakaoAppKey);
-                    this.initialized = true;
-                    console.log("카카오 초기화 성공");
-                }
-            } catch (error) {
-                console.error("카카오 초기화 실패:", error);
-                this.showError("카카오 초기화에 실패했습니다. 페이지를 새로고침해주세요.");
-            }
-        }
-
-        setupEventListeners() {
-            // 페이지 포커스 얻을 때마다 토큰 유효성 검사
-            window.addEventListener('focus', () => this.validateToken());
-            
-            // 주기적으로 토큰 유효성 검사 (5분마다)
-            setInterval(() => this.validateToken(), 300000);
-        }
-
-        async validateToken() {
-            try {
-                const token = Kakao.Auth.getAccessToken();
-                if (!token) return;
-
-                const status = await Kakao.Auth.getStatusInfo();
-                if (!status.status === 'connected') {
-                    console.log("토큰 만료 또는 유효하지 않음");
-                    this.handleLogout();
-                }
-            } catch (error) {
-                console.error("토큰 검증 실패:", error);
-                this.handleLogout();
-            }
-        }
-
-        handleLogout() {
-            if (Kakao.Auth.getAccessToken()) {
-                Kakao.Auth.logout()
-                    .then(() => {
-                        CookieUtil.deleteCookie('userInfo');
-                        localStorage.removeItem('kakao_access_token');
-                        loginLink.style.display = "block";
-                        logoutMenu.style.display = "none";
-                        userProfile.innerHTML = '';
-                        console.log("로그아웃 성공");
-                    })
-                    .catch(error => {
-                        console.error("로그아웃 실패:", error);
-                    });
-            }
-        }
-
-        showError(message) {
-            const errorModal = document.getElementById('loginErrorModal');
-            const errorMessage = errorModal.querySelector('p');
-            errorMessage.textContent = message;
-            errorModal.style.display = "block";
-        }
-    }
-
-    // 문서 로드 완료 시 실행
-    document.addEventListener("DOMContentLoaded", function () {
-        // 카카오 매니저 인스턴스 생성
-        const kakaoManager = new KakaoManager();
-
-        // 로그인 버튼 이벤트 리스너
-        loginLink.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (!kakaoManager.initialized) {
-                kakaoManager.showError("카카오 초기화가 필요합니다. 페이지를 새로고침해주세요.");
-                return;
-            }
-            
-            try {
-                Kakao.Auth.authorize({
-                    redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                    scope: 'profile_nickname, profile_image'
-                });
-            } catch (error) {
-                console.error("카카오 로그인 에러:", error);
-                kakaoManager.showError("로그인 중 오류가 발생했습니다.");
-            }
-        });
-
-        // 나머지 코드는 그대로 유지...
-    });
-
-    // 페이지 로드 시 로그인 상태 체크
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("페이지 로드됨, 로그인 상태 체크");
-        checkLoginStatus();
-    });
-
-    // 로그인 상태 체크 및 UI 업데이트
-    function checkLoginStatus() {
-        try {
-            const token = localStorage.getItem('kakao_access_token');
-            const userInfoStr = localStorage.getItem('user_info');
-            
-            console.log("로그인 상태 체크 시작");
-            console.log("토큰 존재:", !!token);
-            console.log("사용자 정보 존재:", !!userInfoStr);
-            
-            if (token && userInfoStr) {
-                const userInfo = JSON.parse(userInfoStr);
-                console.log("파싱된 사용자 정보:", userInfo);
-                
-                // UI 업데이트
-                const loginLink = document.getElementById('login-link');
-                const logoutMenu = document.getElementById('logout-menu');
-                const userProfile = document.getElementById('user-profile');
-                
-                if (loginLink && logoutMenu && userProfile) {
-                    loginLink.style.display = "none";
-                    logoutMenu.style.display = "block";
-                    
-                    // 프로필 정보 업데이트 (기본 이미지 대체 추가)
-                    userProfile.innerHTML = `
-                        <img src="${userInfo.profile_image || 'https://via.placeholder.com/30'}" 
-                             alt="프로필" 
-                             style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; vertical-align: middle;"
-                             onerror="this.src='https://via.placeholder.com/30'">
-                        <span style="vertical-align: middle;">${userInfo.nickname}</span>
-                    `;
-                    
-                    // 내 정보 섹션 업데이트
-                    if (typeof updateMyInfoSection === 'function') {
-                        updateMyInfoSection(userInfo);
-                    }
-                } else {
-                    console.log("로그아웃 상태");
-                    loginLink.style.display = "block";
-                    logoutMenu.style.display = "none";
-                    loginLink.innerHTML = `
-                        <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
-                             alt="카카오 로그인" 
-                             class="kakao-login-image">
-                        로그인
-                    `;
-                }
-            } catch (error) {
-                console.error("로그인 상태 체크 중 에러:", error);
-                console.error(error.stack);
-            }
-        }
-    }
-
-    // 단일 DOMContentLoaded 이벤트 리스너
-    document.addEventListener("DOMContentLoaded", function () {
-        const kakaoManager = new KakaoManager();
-        
-        // 로그인 버튼 이벤트 리스너
-        const loginLink = document.getElementById('login-link');
-        loginLink.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (!kakaoManager.initialized) {
-                kakaoManager.showError("카카오 초기화가 필요합니다. 페이지를 새로고침해주세요.");
-                return;
-            }
-            
-            try {
-                Kakao.Auth.authorize({
-                    redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                    scope: 'profile_nickname, profile_image'
-                });
-            } catch (error) {
-                console.error("카카오 로그인 에러:", error);
-                kakaoManager.showError("로그인 중 오류가 발생했습니다.");
-            }
-        });
-    });
+    // 맵 초기화 시작
+    initializeMap();
 });
