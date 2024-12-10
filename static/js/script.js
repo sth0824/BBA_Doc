@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const profileName = document.getElementById('profile-name');
         const profileEmail = document.getElementById('profile-email');
 
-        // 카카오 로그��� 정보가 있는 경우
+        // 카카오 로그인 정보가 있는 경우
         if (Kakao.Auth.getAccessToken()) {
             Kakao.API.request({
                 url: '/v2/user/me',
@@ -587,10 +587,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 카카오맵 기화
+    // 카카오맵 초기화
     const mapContainer = document.getElementById("map");
     const options = {
-        center: new kakao.maps.LatLng(33.450701, 126.570667),
+        center: new kakao.maps.LatLng(37.3170542, 127.0971706), // 사용자 위치로 변경
         level: 5,
     };
     const map = new kakao.maps.Map(mapContainer, options);
@@ -859,12 +859,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const searchOption = {
             location: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
             radius: 20000,
-            sort: kakao.maps.services.SortBy.DISTANCE // 거리순 정렬
+            sort: kakao.maps.services.SortBy.DISTANCE // 거리순 ��렬
         };
 
         ps.keywordSearch(searchTerm, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
-                // 현�� 위치 마커 표시
+                // 현재 위치 마커 표시
                 const currentLocationMarker = new kakao.maps.Marker({
                     map: map,
                     position: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
@@ -923,14 +923,38 @@ document.addEventListener("DOMContentLoaded", function () {
     function initializeMap() {
         if (typeof kakao !== 'undefined' && kakao.maps) {
             const mapContainer = document.getElementById("map");
-            const options = {
-                center: new kakao.maps.LatLng(33.450701, 126.570667),
-                level: 5,
-            };
-            const map = new kakao.maps.Map(mapContainer, options);
-            // 나머지 맵 관련 드...
+            getUserLocation().then(location => {
+                const options = {
+                    center: new kakao.maps.LatLng(location.lat, location.lng),
+                    level: 5,
+                };
+                const map = new kakao.maps.Map(mapContainer, options);
+                
+                // 현재 위치 기반으로 병원 검색
+                const ps = new kakao.maps.services.Places();
+                ps.keywordSearch(
+                    "병원",
+                    function (data, status) {
+                        if (status === kakao.maps.services.Status.OK) {
+                            displayHospitals(data);
+                        }
+                    },
+                    {
+                        location: new kakao.maps.LatLng(location.lat, location.lng),
+                        radius: 5000,
+                        sort: kakao.maps.services.SortBy.DISTANCE
+                    }
+                );
+            }).catch(error => {
+                console.error('위치 정보 가져오기 실패:', error);
+                // 기본 위치 사용
+                const options = {
+                    center: new kakao.maps.LatLng(37.3170542, 127.0971706),
+                    level: 5,
+                };
+                const map = new kakao.maps.Map(mapContainer, options);
+            });
         } else {
-            // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
             setTimeout(initializeMap, 100);
         }
     }
