@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 초기 로그인 상태 확인
+    // 초기 ��그인 상태 확인
     updateLoginState();
 
     // 내 정보 모달 관련 코드
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 내 정보 섹션 업데이트 함수
     function updateMyInfoSection(userInfo) {
-        const profileImage = document.getElementById('profile-image');
+        const myInfoProfileImage = document.querySelector('.profile-section .profile-image img');
         const profileName = document.getElementById('profile-name');
         const profileEmail = document.getElementById('profile-email');
 
@@ -387,20 +387,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 const profileImageUrl = response.properties.profile_image;
                 
                 // 프로필 이미지와 이름 업데이트
-                if (profileImage) profileImage.src = profileImageUrl;
+                if (myInfoProfileImage) myInfoProfileImage.src = profileImageUrl;
                 if (profileName) profileName.textContent = nickname;
                 if (profileEmail) profileEmail.textContent = '';
             })
             .catch(function(error) {
                 console.error("사용자 정보 요청 실패:", error);
                 // 에러 시 기본값으로 설정
-                if (profileImage) profileImage.src = '/api/placeholder/150/150';
+                if (myInfoProfileImage) myInfoProfileImage.src = '/api/placeholder/150/150';
                 if (profileName) profileName.textContent = '로그인이 필요합니다';
                 if (profileEmail) profileEmail.textContent = '';
             });
         } else {
             // 로그인되지 않은 경우 기본값으로 설정
-            if (profileImage) profileImage.src = '/api/placeholder/150/150';
+            if (myInfoProfileImage) myInfoProfileImage.src = '/api/placeholder/150/150';
             if (profileName) profileName.textContent = '로그인이 필요합니다';
             if (profileEmail) profileEmail.textContent = '';
         }
@@ -514,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(connectWebSocket, reconnectDelay);
         } else {
             updateConnectionStatus('연결 실패', '#FF0000');
-            addMessage('서버와의 연결이 끊어졌습니다. 페이��를 새로고침해 주세요.', 'bot');
+            addMessage('서버와의 연결이 끊어졌습니다. 페이를 새로고침해 주세요.', 'bot');
         }
     }
 
@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                     <p class="hospital-details">${hospital.road_address_name || hospital.address_name}</p>
                     <p class="hospital-details">전화번호: ${hospital.phone || '정보없음'}</p>
-                    <div class="rating">★★★★☆ ${(Math.random() * (5 - 3.5) + 3.5).toFixed(1)}</div>
+                    <div class="rating">���★★★☆ ${(Math.random() * (5 - 3.5) + 3.5).toFixed(1)}</div>
                 </div>
             `;
             hospitalsGrid.appendChild(hospitalCard);
@@ -877,7 +877,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 level: 5,
             };
             const map = new kakao.maps.Map(mapContainer, options);
-            // 나머지 맵 관련 ��드...
+            // 나머지 맵 관련 드...
         } else {
             // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
             setTimeout(initializeMap, 100);
