@@ -1,12 +1,47 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Kakao 초기화 함수
-    function initializeKakao() {
-        if (!Kakao.isInitialized()) {
-            const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
-            Kakao.init(kakaoAppKey);
+    console.log("DOM 로드됨 - 초기화 시작");
+    
+    // Kakao 초기화 및 토큰 설정 함수
+    async function initializeKakao() {
+        try {
+            // 카카오 초기화 상태 확인
+            console.log("카카오 초기화 상태:", Kakao.isInitialized());
+            
+            if (!Kakao.isInitialized()) {
+                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
+                Kakao.init(kakaoAppKey);
+                console.log("카카오 새로 초기화됨");
+            }
+            
+            // 저장된 토큰 확인
+            const savedToken = localStorage.getItem('kakao_access_token');
+            console.log("저장된 토큰 존재:", !!savedToken);
+            
+            if (savedToken) {
+                Kakao.Auth.setAccessToken(savedToken);
+                console.log("토큰 설정됨:", savedToken);
+                
+                // 토큰 유효성 검증
+                const status = await Kakao.Auth.getStatus();
+                console.log("토큰 상태:", status);
+                
+                if (status.status === 'connected') {
+                    console.log("유효한 토큰, 로그인 상태 업데이트 시작");
+                    updateLoginState();
+                } else {
+                    console.log("유효하지 않은 토큰, 로그아웃 처리");
+                    handleLogout();
+                }
+            } else {
+                console.log("저장된 토큰 없음");
+            }
+        } catch (error) {
+            console.error("카카오 초기화 중 에러:", error);
+            console.error(error.stack);
         }
     }
 
+    // 초기화 실행
     initializeKakao();
 
     // 기존 웹사이트 관련 변수들
@@ -926,11 +961,25 @@ document.addEventListener("DOMContentLoaded", function () {
                         <span style="vertical-align: middle;">${userInfo.nickname}</span>
                     `;
                     
-                    console.log("UI 업데이트 완료");
+                    // 내 정보 섹션 업데이트
+                    if (typeof updateMyInfoSection === 'function') {
+                        updateMyInfoSection(userInfo);
+                    }
+                } else {
+                    console.log("로그아웃 상태");
+                    loginLink.style.display = "block";
+                    logoutMenu.style.display = "none";
+                    loginLink.innerHTML = `
+                        <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
+                             alt="카카오 로그인" 
+                             class="kakao-login-image">
+                        로그인
+                    `;
                 }
+            } catch (error) {
+                console.error("로그인 상태 체크 중 에러:", error);
+                console.error(error.stack);
             }
-        } catch (error) {
-            console.error("로그인 상태 체크 중 에러:", error);
         }
     }
 
