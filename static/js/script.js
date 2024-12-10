@@ -635,6 +635,7 @@ function setupSlider() {
 document.addEventListener('DOMContentLoaded', setupSlider);
 // 채팅 이벤트 리스너
 chatSend.addEventListener('click', sendMessage);
+
 chatInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -773,4 +774,53 @@ connectWebSocket();
         favoritesManager.updateFavoriteButtons();
         setupSlider();
     }
+    // 검색 기능 구현
+function setupSearch() {
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-btn');
+    
+    function performSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (!searchTerm) return;
+        
+        // 현재 위치 기준으로 카카오맵 API 검색
+        const places = new kakao.maps.services.Places();
+        
+        places.keywordSearch(searchTerm + ' 병원', (result, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+                // 기존 마커 제거
+                markers.forEach(marker => marker.setMap(null));
+                markers = [];
+                
+                // 검색 결과를 화면에 표시
+                displayHospitals(result);
+                
+                // 지도 중심 이동
+                const bounds = new kakao.maps.LatLngBounds();
+                result.forEach(place => {
+                    bounds.extend(new kakao.maps.LatLng(place.y, place.x));
+                });
+                map.setBounds(bounds);
+                
+                // 지도 섹션으로 스크롤
+                document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+    
+    // 검색 버튼 클릭 이벤트
+    searchBtn.addEventListener('click', performSearch);
+    
+    // 엔터키 입력 이벤트
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+}
+
+// DOM이 로드된 후 검색 기능 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    setupSearch();
+});
 });
