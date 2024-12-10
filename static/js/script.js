@@ -139,18 +139,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 로그인 버튼 영역 업데이트
                 const profileImageEl = document.getElementById('profile-image');
                 const loginText = document.getElementById('login-text');
-                const userProfile = document.getElementById('user-profile');
                 
-                if (profileImageEl && loginText && userProfile) {
+                if (profileImageEl && loginText) {
                     profileImageEl.src = profileImage;
                     profileImageEl.classList.remove('kakao-login-image');
                     profileImageEl.classList.add('profile-img');
                     loginText.textContent = nickname;
-                    
-                    userProfile.innerHTML = `
-                        <img src="${profileImage}" alt="프로필" class="profile-image">
-                        <span>${nickname}</span>
-                    `;
                     
                     // UI 상태 변경
                     loginLink.style.display = "flex";
@@ -185,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.saveToStorage();
                 this.updateFavoriteButtons();
                 this.renderFavorites();
-                this.showToast('즐겨찾기에 추가되었습니다.');
+                this.showToast('즐겨찾기에 추가되었���니다.');
             }
         },
 
@@ -221,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="no-favorites">
                         아직 즐겨찾기한 병원이 없습니다.
                         <br>
-                        병원 카드의 하트 아이콘을 클클릭하여 즐겨찾기에 추가해보세요!
+                        병원 카드의 하트 ��이콘을 클클릭하여 즐겨찾기에 추가해보세요!
                     </div>`;
                 return;
             }
@@ -294,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 즐겨찾기 매니저 인스턴스 ���성
+    // 즐겨찾기 매니저 인스턴스 성성
     const favoritesManager = new FavoritesManager();
 
     // 카카오 로그인 관련 함수들
@@ -364,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
     myInfoLink.addEventListener('click', function(e) {
         e.preventDefault();
         if (!Kakao.Auth.getAccessToken()) {
-            // 로그인되지 않은 경우 카카오 로그인 실행
+            // 로그인되지 않은 경우 카카오 로그인 ���행
             loginLink.click();
             return;
         }
@@ -404,7 +398,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loginLink.click();
     });
 
-    // 모달 외부 클��시 닫기
+    // 모달 외부 클시 닫기
     window.addEventListener("click", function(event) {
         if (event.target === loginErrorModal) {
             loginErrorModal.style.display = "none";
@@ -655,7 +649,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setupSlider();
     }
 
-    // 마커 표시
+    // 마커 표��
     function displayMarker(place) {
         const marker = new kakao.maps.Marker({
             map: map,
