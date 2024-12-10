@@ -351,19 +351,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 초기 ��그인 상태 확인
+    // 초기 로그인 상태 확인
     updateLoginState();
 
     // 내 정보 모달 관련 코드
     myInfoLink.addEventListener('click', function(e) {
         e.preventDefault();
         if (!Kakao.Auth.getAccessToken()) {
-            // 로그인되지 않은 경우 카카오 로그인 행
             loginLink.click();
             return;
         }
         myInfoModal.style.display = 'block';
-        // 즐겨찾기 목록 새로고침
+        updateMyInfoSection();
         favoritesManager.renderFavorites();
     });
 
@@ -373,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 내 정보 섹션 업데이트 함수
     function updateMyInfoSection(userInfo) {
-        const myInfoProfileImage = document.querySelector('.profile-section .profile-image img');
+        const myInfoProfileImage = document.getElementById('myinfo-profile-image');
         const profileName = document.getElementById('profile-name');
         const profileEmail = document.getElementById('profile-email');
 
@@ -383,11 +382,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 url: '/v2/user/me',
             })
             .then(function(response) {
+                console.log("내정보 모달 사용자 정보:", response);
                 const nickname = response.properties.nickname;
                 const profileImageUrl = response.properties.profile_image;
                 
                 // 프로필 이미지와 이름 업데이트
-                if (myInfoProfileImage) myInfoProfileImage.src = profileImageUrl;
+                if (myInfoProfileImage) {
+                    myInfoProfileImage.src = profileImageUrl;
+                    console.log("프로필 이미지 업데이트:", profileImageUrl);
+                }
                 if (profileName) profileName.textContent = nickname;
                 if (profileEmail) profileEmail.textContent = '';
             })
@@ -655,7 +658,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                     <p class="hospital-details">${hospital.road_address_name || hospital.address_name}</p>
                     <p class="hospital-details">전화번호: ${hospital.phone || '정보없음'}</p>
-                    <div class="rating">���★★★☆ ${(Math.random() * (5 - 3.5) + 3.5).toFixed(1)}</div>
+                    <div class="rating">★★★☆ ${(Math.random() * (5 - 3.5) + 3.5).toFixed(1)}</div>
                 </div>
             `;
             hospitalsGrid.appendChild(hospitalCard);
