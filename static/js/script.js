@@ -139,21 +139,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 로그인 버튼 영역 업데이트
                 const profileImageEl = document.getElementById('profile-image');
                 const loginText = document.getElementById('login-text');
+                const userProfile = document.getElementById('user-profile');
                 
-                profileImageEl.src = profileImage;
-                profileImageEl.classList.remove('kakao-login-image');
-                profileImageEl.classList.add('profile-img');
-                loginText.textContent = nickname;
-                
-                // UI 상태 변경
-                loginLink.style.display = "flex";
-                logoutMenu.style.display = "block";
-                
-                // 사용자 정보 저장
-                CookieUtil.setCookie('userInfo', {
-                    nickname: nickname,
-                    profileImage: profileImage
-                }, 7);
+                if (profileImageEl && loginText && userProfile) {
+                    profileImageEl.src = profileImage;
+                    profileImageEl.classList.remove('kakao-login-image');
+                    profileImageEl.classList.add('profile-img');
+                    loginText.textContent = nickname;
+                    
+                    userProfile.innerHTML = `
+                        <img src="${profileImage}" alt="프로필" class="profile-image">
+                        <span>${nickname}</span>
+                    `;
+                    
+                    // UI 상태 변경
+                    loginLink.style.display = "flex";
+                    logoutMenu.style.display = "block";
+                    
+                    // 사용자 정보 저장
+                    CookieUtil.setCookie('userInfo', {
+                        nickname: nickname,
+                        profileImage: profileImage
+                    }, 7);
+                }
             })
             .catch(function(error) {
                 console.error("사용자 정보 요청 실패:", error);
@@ -286,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 즐겨찾기 매니저 인스턴스 생성
+    // 즐겨찾기 매니저 인스턴스 ���성
     const favoritesManager = new FavoritesManager();
 
     // 카카오 로그인 관련 함수들
@@ -396,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loginLink.click();
     });
 
-    // 모달 외부 클릭시 닫기
+    // 모달 외부 클��시 닫기
     window.addEventListener("click", function(event) {
         if (event.target === loginErrorModal) {
             loginErrorModal.style.display = "none";
