@@ -745,7 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // 사용자 메시지 표시
             addMessage(message, "user");
             
-            // 메시지 전송
+            // 메시지 전���
             try {
                 ws.send(JSON.stringify({
                     type: "message",
@@ -900,18 +900,27 @@ document.addEventListener("DOMContentLoaded", function () {
             const token = localStorage.getItem('kakao_access_token');
             const userInfoStr = localStorage.getItem('user_info');
             
+            console.log("로그인 상태 체크:", { token, userInfoStr });
+            
             if (token && userInfoStr) {
                 const userInfo = JSON.parse(userInfoStr);
+                console.log("사용자 정보:", userInfo);
                 
                 // UI 업데이트
                 loginLink.style.display = "none";
                 logoutMenu.style.display = "block";
                 
-                // 프로필 정보 업데이트
-                userProfile.innerHTML = `
-                    <img src="${userInfo.profile_image}" alt="프로필" class="profile-image" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px;">
-                    <span>${userInfo.nickname}</span>
+                // 프더의 프로필 정보 업데이트
+                const headerProfile = document.createElement('div');
+                headerProfile.className = 'header-profile';
+                headerProfile.innerHTML = `
+                    <img src="${userInfo.profile_image}" alt="프로필" 
+                         style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px;">
+                    <span style="color: #333; font-weight: 500;">${userInfo.nickname}</span>
                 `;
+                
+                // 기존 로그인 버튼을 프로필 정보로 교체
+                loginLink.parentNode.replaceChild(headerProfile, loginLink);
                 
                 // 내 정보 섹션 업데이트
                 updateMyInfoSection(userInfo);
@@ -925,7 +934,6 @@ document.addEventListener("DOMContentLoaded", function () {
                          class="kakao-login-image">
                     로그인
                 `;
-                userProfile.innerHTML = "";
                 updateMyInfoSection(null);
             }
         } catch (error) {
