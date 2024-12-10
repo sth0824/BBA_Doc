@@ -136,13 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 const nickname = response.properties.nickname;
                 const profileImage = response.properties.profile_image;
                 
-                userProfile.innerHTML = `
-                    <img src="${profileImage}" alt="프로필" class="profile-image">
-                    <span>${nickname}</span>
-                `;
+                // 로그인 버튼 영역 업데이트
+                const profileImageEl = document.getElementById('profile-image');
+                const loginText = document.getElementById('login-text');
+                
+                profileImageEl.src = profileImage;
+                profileImageEl.classList.remove('kakao-login-image');
+                profileImageEl.classList.add('profile-img');
+                loginText.textContent = nickname;
                 
                 // UI 상태 변경
-                loginLink.style.display = "none";
+                loginLink.style.display = "flex";
                 logoutMenu.style.display = "block";
                 
                 // 사용자 정보 저장
@@ -153,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(function(error) {
                 console.error("사용자 정보 요청 실패:", error);
-                handleLogout(); // 오류 발생시 로그아웃 처리
+                handleLogout();
             });
         } catch (error) {
             console.error("로그인 상태 체크 중 에러:", error);
@@ -306,14 +310,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Kakao.Auth.getAccessToken()) {
             Kakao.Auth.logout();
         }
-        loginLink.innerHTML = `
-            <img src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" 
-                 alt="카카오 로그인" 
-                 class="kakao-login-image">
-            로그인
-        `;
+        const profileImageEl = document.getElementById('profile-image');
+        const loginText = document.getElementById('login-text');
+        
+        profileImageEl.src = 'https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg';
+        profileImageEl.classList.remove('profile-img');
+        profileImageEl.classList.add('kakao-login-image');
+        loginText.textContent = '로그인';
+        
         logoutMenu.style.display = "none";
-        userProfile.textContent = "";
         myInfoModal.style.display = "none";
         
         // 내 정보 섹션 초기화
@@ -489,7 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(connectWebSocket, reconnectDelay);
         } else {
             updateConnectionStatus('연결 실패', '#FF0000');
-            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 ��로고침해 주세요.', 'bot');
+            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 새로고침해 주세요.', 'bot');
         }
     }
 
