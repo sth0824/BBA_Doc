@@ -578,6 +578,51 @@ function addMessage(content, type) {
     chatMessages.appendChild(messageDiv);
 }
 
+function setupSlider() {
+    const hospitalsGrid = document.querySelector('.hospitals-grid');
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    const cards = document.querySelectorAll('.hospital-card');
+    
+    if (!hospitalsGrid || !prevBtn || !nextBtn || cards.length === 0) return;
+
+    let currentPosition = 0;
+    const cardWidth = cards[0].offsetWidth + 20; // 20px는 gap
+    const maxPosition = (cards.length - 3) * cardWidth; // 3은 한 번에 보여줄 카드 수
+
+    function updateSliderPosition() {
+        hospitalsGrid.style.transform = `translateX(-${currentPosition}px)`;
+        
+        // 버튼 활성화/비활성화 상태 업데이트
+        prevBtn.disabled = currentPosition <= 0;
+        nextBtn.disabled = currentPosition >= maxPosition;
+        
+        // 버튼 스타일 업데이트
+        prevBtn.style.opacity = prevBtn.disabled ? '0.5' : '1';
+        nextBtn.style.opacity = nextBtn.disabled ? '0.5' : '1';
+    }
+
+    prevBtn.addEventListener('click', () => {
+        currentPosition = Math.max(0, currentPosition - cardWidth);
+        updateSliderPosition();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        currentPosition = Math.min(maxPosition, currentPosition + cardWidth);
+        updateSliderPosition();
+    });
+
+    // 초기 버튼 상태 설정
+    updateSliderPosition();
+
+    // 창 크기 변경 시 슬라이더 위치 재조정
+    window.addEventListener('resize', () => {
+        const newCardWidth = cards[0].offsetWidth + 20;
+        const newMaxPosition = (cards.length - 3) * newCardWidth;
+        currentPosition = Math.min(currentPosition, newMaxPosition);
+        updateSliderPosition();
+    });
+}
 // 채팅 이벤트 리스너
 chatSend.addEventListener('click', sendMessage);
 chatInput.addEventListener('keypress', function(e) {
