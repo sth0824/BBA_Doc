@@ -110,46 +110,51 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 카카오 로그인 상태 확인 및 UI 업이트 함수
+    // 카카오 로그인 상태 확인 및 UI 업데이트 함수
     function updateLoginState() {
         try {
-            Kakao.Auth.getStatusInfo()
-                .then(function(res) {
-                    if (res.status === 'connected') {
-                        // 사용자 정보 요청
-                        Kakao.API.request({
-                            url: '/v2/user/me',
-                        })
-                        .then(function(response) {
-                            console.log("사용자 정보:", response);
-                            
-                            // 프로필 정보 업데이트
-                            const nickname = response.properties.nickname;
-                            const profileImage = response.properties.profile_image;
-                            
-                            userProfile.innerHTML = `
-                                <img src="${profileImage}" alt="프로필" class="profile-image">
-                                <span>${nickname}</span>
-                            `;
-                            
-                            // UI 상태 변경
-                            loginLink.style.display = "none";
-                            logoutMenu.style.display = "block";
-                            
-                            // 사용자 정보 저장
-                            CookieUtil.setCookie('userInfo', {
-                                nickname: nickname,
-                                profileImage: profileImage
-                            }, 7);
-                        })
-                        .catch(function(error) {
-                            console.error("사용자 정보 요청 실패:", error);
-                        });
-                    }
-                })
-                .catch(function(error) {
-                    console.error("로그인 상태 확인 실패:", error);
-                });
+            if (!Kakao.isInitialized()) {
+                console.log("카카오 초기화되지 않음");
+                return;
+            }
+            
+            const token = localStorage.getItem('kakao_access_token');
+            if (!token) {
+                console.log("액세스 토큰 없음");
+                return;
+            }
+
+            Kakao.Auth.setAccessToken(token);
+            
+            Kakao.API.request({
+                url: '/v2/user/me',
+            })
+            .then(function(response) {
+                console.log("사용자 정보:", response);
+                
+                // 프로필 정보 업데이트
+                const nickname = response.properties.nickname;
+                const profileImage = response.properties.profile_image;
+                
+                userProfile.innerHTML = `
+                    <img src="${profileImage}" alt="프로필" class="profile-image">
+                    <span>${nickname}</span>
+                `;
+                
+                // UI 상태 변경
+                loginLink.style.display = "none";
+                logoutMenu.style.display = "block";
+                
+                // 사용자 정보 저장
+                CookieUtil.setCookie('userInfo', {
+                    nickname: nickname,
+                    profileImage: profileImage
+                }, 7);
+            })
+            .catch(function(error) {
+                console.error("사용자 정보 요청 실패:", error);
+                handleLogout(); // 오류 발생시 로그아웃 처리
+            });
         } catch (error) {
             console.error("로그인 상태 체크 중 에러:", error);
             console.error(error.stack);
@@ -317,19 +322,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     logoutLink.addEventListener("click", function(e) {
         e.preventDefault();
-        if (Kakao.Auth.getAccessToken()) {
-            Kakao.Auth.logout()
-                .then(function() {
-                    // 로그아웃 처리
-                    CookieUtil.deleteCookie('userInfo');
-                    loginLink.style.display = "block";
-                    logoutMenu.style.display = "none";
-                    userProfile.innerHTML = '';
-                    console.log("로그아웃 성공");
-                })
-                .catch(function(error) {
-                    console.error("로그아웃 실패:", error);
-                });
+        try {
+            if (Kakao.Auth.getAccessToken()) {
+                Kakao.Auth.logout()
+                    .then(function() {
+                        // 로그아웃 처리
+                        localStorage.removeItem('kakao_access_token');
+                        localStorage.removeItem('user_info');
+                        CookieUtil.deleteCookie('userInfo');
+                        loginLink.style.display = "block";
+                        logoutMenu.style.display = "none";
+                        userProfile.innerHTML = '';
+                        console.log("로그아웃 성공");
+                    })
+                    .catch(function(error) {
+                        console.error("로그아웃 실패:", error);
+                    });
+            }
+        } catch (error) {
+            console.error("로그아웃 처리 중 에러:", error);
         }
     });
 
@@ -478,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(connectWebSocket, reconnectDelay);
         } else {
             updateConnectionStatus('연결 실패', '#FF0000');
-            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 새로고침해 주세요.', 'bot');
+            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 ��로고침해 주세요.', 'bot');
         }
     }
 
