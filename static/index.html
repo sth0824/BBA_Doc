@@ -15,20 +15,13 @@
     
     <!-- 카카오 초기화 스크립트 추가 -->
     <script>
-        window.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             try {
-                console.log("카카오 초기화 시작");
-                
-                // 이미 초기화되었는지 확인
+                const kakaoAppKey = document.querySelector('meta[name="kakao-app-key"]').content;
                 if (!Kakao.isInitialized()) {
-                    Kakao.init('33de0cdfcef9e84f97fad9eb65468f33');
-                    console.log("카카오 초기화 완료");
-                } else {
-                    console.log("카카오 이미 초기화됨");
+                    Kakao.init(kakaoAppKey);
+                    console.log("카카오 초기화 성공");
                 }
-                
-                // 로그인 상태 체크
-                checkLoginStatus();
             } catch (error) {
                 console.error("카카오 초기화 오류:", error);
             }
@@ -91,7 +84,7 @@
             </div>
         </div>
         <div class="chat-input-container">
-            <input type="text" id="chat-input" placeholder="���시지를 입력하세요..." disabled>
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." disabled>
             <button id="chat-send" disabled>전송</button>
             <div class="loading-indicator" id="loading-indicator" style="display: none;">
                 <div class="chat-loading">
