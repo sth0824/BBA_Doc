@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 초기 로그인 태 확인
+    // 초기 로그�� 태 확인
     updateLoginState();
 
     // 내 정보 모달 관련 코드
@@ -870,11 +870,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const hospitalCard = document.createElement("div");
             hospitalCard.classList.add("hospital-card");
 
-            // 현재 위치와 병원 위치 사이의 거리 계산
-            const hospitalLatLng = new kakao.maps.LatLng(hospital.y, hospital.x);
-            const userLatLng = new kakao.maps.LatLng(userLocation.lat, userLocation.lng);
-            const distance = Math.round(userLatLng.getDistance(hospitalLatLng));
-
             hospitalCard.innerHTML = `
                 <div class="hospital-info">
                     <div class="hospital-header">
@@ -887,7 +882,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                     <p class="hospital-details">${hospital.road_address_name || hospital.address_name}</p>
                     <p class="hospital-details">전화번호: ${hospital.phone || '정보없음'}</p>
-                    <p class="hospital-details">거리: ${distance < 1000 ? `${distance}m` : `${(distance/1000).toFixed(1)}km`}</p>
                     <div class="rating">★★★★☆ ${(Math.random() * (5 - 3.5) + 3.5).toFixed(1)}</div>
                 </div>
             `;
@@ -897,7 +891,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // 병원 마커 생성 및 추가
             const marker = new kakao.maps.Marker({
                 map: map,
-                position: hospitalLatLng
+                position: new kakao.maps.LatLng(hospital.y, hospital.x)
             });
             
             markers.push(marker);
@@ -916,9 +910,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             </p>
                             <p style="margin:5px 0 0;font-size:13px;">
                                 ${hospital.phone || '전화번호 없음'}
-                            </p>
-                            <p style="margin:5px 0 0;font-size:13px;">
-                                거리: ${distance < 1000 ? `${distance}m` : `${(distance/1000).toFixed(1)}km`}
                             </p>
                         </div>
                     `
