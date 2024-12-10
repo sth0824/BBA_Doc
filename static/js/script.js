@@ -429,163 +429,160 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 챗팅 관련 변수들
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const chatSend = document.getElementById('chat-send');
-    const connectionStatus = document.getElementById('connection-status');
-    const loadingIndicator = document.getElementById('loading-indicator');
-    const chatToggle = document.getElementById('chat-toggle');
-    const chatContainer = document.getElementById('chat-container');
-
-    let ws = null;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const reconnectDelay = 3000;
-
-    // 채팅창 토글 기능
-    chatToggle.addEventListener('click', function() {
-        if (chatContainer.classList.contains('minimized')) {
-            chatContainer.classList.remove('minimized');
-            chatToggle.textContent = '−';
-        } else {
-            chatContainer.classList.add('minimized');
-            chatToggle.textContent = '+';
-        }
-    });
-
-    // 웹소켓 연결 함수
-    function connectWebSocket() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            console.log('WebSocket already connected');
-            return;
-        }
-
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-        ws = new WebSocket(wsUrl);
-        updateConnectionStatus('연결 중...', '#FFA500');
-        
-        ws.onopen = function() {
-            console.log('WebSocket Connected');
-            updateConnectionStatus('연결됨', '#4CAF50');
-            enableChatInterface();
-            reconnectAttempts = 0;
-        };
-
-        ws.onclose = function() {
-            console.log('WebSocket Disconnected');
-            disableChatInterface();
-            handleReconnect();
-        };
-
-        ws.onerror = function(error) {
-            console.error('WebSocket Error:', error);
-            updateConnectionStatus('연결 오류', '#FF0000');
-            disableChatInterface();
-        };
-
-        ws.onmessage = function(event) {
-            try {
-                const response = JSON.parse(event.data);
-                hideLoading();
+        // 챗팅 관련 변수들
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const connectionStatus = document.getElementById('connection-status');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatContainer = document.getElementById('chat-container');
+    
+        let ws = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectDelay = 3000;
+    
+        // 채팅창 토글 기능
+        chatToggle.addEventListener('click', function() {
+            if (chatContainer.classList.contains('minimized')) {
+                chatContainer.classList.remove('minimized');
+                chatToggle.textContent = '−';
+            } else {
+                chatContainer.classList.add('minimized');
+                chatToggle.textContent = '+';
+            }
+        });
+        // 웹소켓 연결 함수
+        function connectWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log('WebSocket already connected');
+                return;
+            }
+    
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+            ws = new WebSocket(wsUrl);
+            updateConnectionStatus('연결 중...', '#FFA500');
+            
+            ws.onopen = function() {
+                console.log('WebSocket Connected');
+                updateConnectionStatus('연결됨', '#4CAF50');
                 enableChatInterface();
+                reconnectAttempts = 0;
+            };
+    
+            ws.onclose = function() {
+                console.log('WebSocket Disconnected');
+                disableChatInterface();
+                handleReconnect();
+            };
+    
+            ws.onerror = function(error) {
+                console.error('WebSocket Error:', error);
+                updateConnectionStatus('연결 오류', '#FF0000');
+                disableChatInterface();
+            };
+    
+            ws.onmessage = function(event) {
+                try {
+                    const response = JSON.parse(event.data);
+                    hideLoading();
+                    enableChatInterface();
+                    
+                    if (response.answer) {
+                        addMessage(response.answer, 'bot');
+                    }
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } catch (error) {
+                    console.error('Error processing message:', error);
+                    hideLoading();
+                    enableChatInterface();
+                    addMessage('죄송합니다. 오류가 발생했습니다.', 'bot');
+                }
+            };
+        }
+        function updateConnectionStatus(message, color) {
+            connectionStatus.textContent = message;
+            connectionStatus.style.color = color;
+        }
+    
+        function handleReconnect() {
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                updateConnectionStatus(`재연결 시도 중... (${reconnectAttempts}/${maxReconnectAttempts})`, '#FFA500');
+                setTimeout(connectWebSocket, reconnectDelay);
+            } else {
+                updateConnectionStatus('연결 실패', '#FF0000');
+                addMessage('서버와의 연결이 끊어졌습니다. 페이를 새로고침해 주세요.', 'bot');
+            }
+        }
+    
+        function enableChatInterface() {
+            chatInput.disabled = false;
+            chatSend.disabled = false;
+            chatInput.placeholder = "메시지를 입력하세요...";
+        }
+    
+        function disableChatInterface() {
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+            chatInput.placeholder = "연결 중...";
+        }
+    
+        function showLoading() {
+            loadingIndicator.style.display = 'block';
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+        }
+    
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+            chatInput.disabled = false;
+            chatSend.disabled = false;
+        }
+        // 메시지 전송 함수
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message && ws && ws.readyState === WebSocket.OPEN) {
+                addMessage(message, 'user');
                 
-                if (response.answer) {
-                    addMessage(response.answer, 'bot');
+                try {
+                    ws.send(JSON.stringify({ message: message }));
+                    chatInput.value = '';
+                    showLoading();
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    addMessage('메시지 전송에 실패했습니다.', 'bot');
+                    hideLoading();
                 }
                 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            } catch (error) {
-                console.error('Error processing message:', error);
-                hideLoading();
-                enableChatInterface();
-                addMessage('죄송합니다. 오류가 발생했습니다.', 'bot');
             }
-        };
-    }
-
-    function updateConnectionStatus(message, color) {
-        connectionStatus.textContent = message;
-        connectionStatus.style.color = color;
-    }
-
-    function handleReconnect() {
-        if (reconnectAttempts < maxReconnectAttempts) {
-            reconnectAttempts++;
-            updateConnectionStatus(`재연결 시도 중... (${reconnectAttempts}/${maxReconnectAttempts})`, '#FFA500');
-            setTimeout(connectWebSocket, reconnectDelay);
-        } else {
-            updateConnectionStatus('연결 실패', '#FF0000');
-            addMessage('서버와의 연결이 끊어졌습니다. 페이를 새로고침해 주세요.', 'bot');
         }
-    }
-
-    function enableChatInterface() {
-        chatInput.disabled = false;
-        chatSend.disabled = false;
-        chatInput.placeholder = "메시지를 입력하세요...";
-    }
-
-    function disableChatInterface() {
-        chatInput.disabled = true;
-        chatSend.disabled = true;
-        chatInput.placeholder = "연결 중...";
-    }
-
-    function showLoading() {
-        loadingIndicator.style.display = 'block';
-        chatInput.disabled = true;
-        chatSend.disabled = true;
-    }
-
-    function hideLoading() {
-        loadingIndicator.style.display = 'none';
-        chatInput.disabled = false;
-        chatSend.disabled = false;
-    }
-
-    // 메시지 전송 함수
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (message && ws && ws.readyState === WebSocket.OPEN) {
-            addMessage(message, 'user');
+    
+        // 메시지 추가 함수
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
             
-            try {
-                ws.send(JSON.stringify({ message: message }));
-                chatInput.value = '';
-                showLoading();
-            } catch (error) {
-                console.error('Error sending message:', error);
-                addMessage('메시지 전송에 실패했습니다.', 'bot');
-                hideLoading();
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+        }
+    
+        // 채팅 이벤트 리스너
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    }
-
-    // 메시지 추가 함수
-    function addMessage(content, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}-message`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = content;
-        
-        messageDiv.appendChild(contentDiv);
-        chatMessages.appendChild(messageDiv);
-    }
-
-    // 채팅 이벤트 리스너
-    chatSend.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+        });
 
     // 전역 변수 선언
     let map;
