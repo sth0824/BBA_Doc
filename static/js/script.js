@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.saveToStorage();
                 this.updateFavoriteButtons();
                 this.renderFavorites();
-                this.showToast('즐겨찾기에 추가되었���니다.');
+                this.showToast('즐겨찾기에 추가되었니다.');
             }
         },
 
@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="no-favorites">
                         아직 즐겨찾기한 병원이 없습니다.
                         <br>
-                        병원 카드의 하트 ��이콘을 클클릭하여 즐겨찾기에 추가해보세요!
+                        병원 카드의 하트 이콘을 클클릭하여 즐겨찾기에 추가해보세요!
                     </div>`;
                 return;
             }
@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
     myInfoLink.addEventListener('click', function(e) {
         e.preventDefault();
         if (!Kakao.Auth.getAccessToken()) {
-            // 로그인되지 않은 경우 카카오 로그인 ���행
+            // 로그인되지 않은 경우 카카오 로그인 행
             loginLink.click();
             return;
         }
@@ -377,14 +377,32 @@ document.addEventListener("DOMContentLoaded", function () {
         const profileName = document.getElementById('profile-name');
         const profileEmail = document.getElementById('profile-email');
 
-        if (userInfo) {
-            profileImage.src = userInfo.thumbnail_image || '/api/placeholder/150/150';
-            profileName.textContent = userInfo.nickname || '사용';
-            profileEmail.textContent = userInfo.email || '';
+        // 카카오 로그인 정보가 있는 경우
+        if (Kakao.Auth.getAccessToken()) {
+            Kakao.API.request({
+                url: '/v2/user/me',
+            })
+            .then(function(response) {
+                const nickname = response.properties.nickname;
+                const profileImageUrl = response.properties.profile_image;
+                
+                // 프로필 이미지와 이름 업데이트
+                if (profileImage) profileImage.src = profileImageUrl;
+                if (profileName) profileName.textContent = nickname;
+                if (profileEmail) profileEmail.textContent = '';
+            })
+            .catch(function(error) {
+                console.error("사용자 정보 요청 실패:", error);
+                // 에러 시 기본값으로 설정
+                if (profileImage) profileImage.src = '/api/placeholder/150/150';
+                if (profileName) profileName.textContent = '로그인이 필요합니다';
+                if (profileEmail) profileEmail.textContent = '';
+            });
         } else {
-            profileImage.src = '/api/placeholder/150/150';
-            profileName.textContent = '로그인이 필요합니다';
-            profileEmail.textContent = '';
+            // 로그인되지 않은 경우 기본값으로 설정
+            if (profileImage) profileImage.src = '/api/placeholder/150/150';
+            if (profileName) profileName.textContent = '로그인이 필요합니다';
+            if (profileEmail) profileEmail.textContent = '';
         }
     }
 
@@ -496,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(connectWebSocket, reconnectDelay);
         } else {
             updateConnectionStatus('연결 실패', '#FF0000');
-            addMessage('서버와의 연결이 끊어졌습니다. 페이지를 새로고침해 주세요.', 'bot');
+            addMessage('서버와의 연결이 끊어졌습니다. 페이��를 새로고침해 주세요.', 'bot');
         }
     }
 
@@ -649,7 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setupSlider();
     }
 
-    // 마커 표��
+    // 마커 표시
     function displayMarker(place) {
         const marker = new kakao.maps.Marker({
             map: map,
@@ -859,7 +877,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 level: 5,
             };
             const map = new kakao.maps.Map(mapContainer, options);
-            // 나머지 맵 관련 코드...
+            // 나머지 맵 관련 ��드...
         } else {
             // 카카오맵 SDK가 아직 로드되지 않은 경우 재시도
             setTimeout(initializeMap, 100);
