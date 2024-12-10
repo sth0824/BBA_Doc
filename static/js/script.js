@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             Kakao.Auth.authorize({
                 redirectUri: 'https://bba-doc-1.onrender.com/oauth',
-                scope: 'profile_nickname, profile_image, account_email'
+                scope: 'profile_nickname, profile_image'
             });
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
