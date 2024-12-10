@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 초기 로그�� 태 확인
+    // 초기 로그인 태 확인
     updateLoginState();
 
     // 내 정보 모달 관련 코드
@@ -588,268 +588,60 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 전역 변수 선언
-    
+    let map;
     let markers = [];
     let currentLocationMarker = null;
     let currentInfoWindow = null;
 
-    // 카카오맵 초기화
-    const mapContainer = document.getElementById("map");
-    const options = {
-        center: new kakao.maps.LatLng(33.450701, 126.570667),
-        level: 5,
-    };
-    const map = new kakao.maps.Map(mapContainer, options);
-
-    // 위치 기반 서비스
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const locPosition = new kakao.maps.LatLng(lat, lon);
-            map.setCenter(locPosition);
-            
-            const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png';
-            const imageSize = new kakao.maps.Size(24, 35);
-            const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
-
-            const currentLocationMarker = new kakao.maps.Marker({
-                map: map,
-                position: locPosition,
-                image: markerImage
-            });
-
-            const currentLocationInfo = new kakao.maps.InfoWindow({
-                content: '<div style="padding:5px;">현재 위치</div>'
-            });
-
-            const ps = new kakao.maps.services.Places();
-            
-            // 주변 병원 검색
-            ps.keywordSearch(
-                "병원",
-                function (data, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        displayHospitals(data);
-                    }
-                },
-                {
-                    location: locPosition,
-                    radius: 5000,
-                    sort: kakao.maps.services.SortBy.DISTANCE
-                }
-            );
-        });
-    } else {
-        alert("현재 위치를 불러올 수 없습니다.");
-    }
-
-    // 슬라이더 설정
-    function setupSlider() {
-        const items = document.querySelectorAll(".hospital-card");
-        const totalItems = items.length;
-        let currentIndex = 0;
-        const itemsPerView = 3;
-        const itemWidth = items[0].offsetWidth + parseInt(window.getComputedStyle(items[0]).marginRight);
-
-        function moveSlider(index) {
-            const slider = document.querySelector(".hospitals-grid");
-            slider.style.transform = `translateX(-${itemWidth * index}px)`;
-        }
-
-        document.querySelector(".prev-btn").addEventListener("click", function () {
-            if (currentIndex > 0) {
-                currentIndex--;
-                moveSlider(currentIndex);
-            }
-        });
-
-        document.querySelector(".next-btn").addEventListener("click", function () {
-            if (currentIndex < totalItems - itemsPerView) {
-                currentIndex++;
-                moveSlider(currentIndex);
-            }
-        });
-
-        window.addEventListener("resize", function () {
-            moveSlider(currentIndex);
-        });
-    }
-
-    // 웹소켓 연결 초기화
-    connectWebSocket();
-
-    // 사용자 위치 가져오기
-    function getUserLocation() {
-        return new Promise((resolve, reject) => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        console.log('사용자 위치:', userLocation);
-                        resolve(userLocation);
-                    },
-                    (error) => {
-                        console.error('위치 가져오기 실패:', error);
-                        reject(error);
-                    }
-                );
-            } else {
-                reject(new Error('위치 서비스가 지원되지 않습니다.'));
-            }
-        });
-    }
-
-    // 검색 요소 가져오기
-    const searchInput = document.querySelector('.search-input');
-    const searchBtn = document.querySelector('.search-btn');
-
-    if (searchBtn && searchInput) {
-        // 검색 버튼 클릭 이벤트
-        searchBtn.addEventListener('click', async function() {
-            const keyword = searchInput.value.trim();
-            if (keyword) {
-                try {
-                    // 위치 정보가 없으면 가져오기
-                    if (!userLocation) {
-                        await getUserLocation();
-                    }
-                    searchByDepartment(keyword);
-                } catch (error) {
-                    alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
-                }
-            }
-        });
-
-        // 엔터키 검색 이벤트
-        searchInput.addEventListener('keypress', async function(e) {
-            if (e.key === 'Enter') {
-                const keyword = this.value.trim();
-                if (keyword) {
-                    try {
-                        if (!userLocation) {
-                            await getUserLocation();
-                        }
-                        searchByDepartment(keyword);
-                    } catch (error) {
-                        alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 허용해주세요.');
-                    }
-                }
-            }
-        });
-    }
-
-    // 진료과목 검색 함수
-    function searchByDepartment(keyword) {
-        // 기존 마커 제거
-        markers.forEach(marker => marker.setMap(null));
-        markers = [];
-        
-        const ps = new kakao.maps.services.Places();
-        const searchTerm = keyword + " 병원";
-
-        // 검색 옵션 설정 (20km = 20000m)
-        const searchOption = {
-            location: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
-            radius: 20000,
-            sort: kakao.maps.services.SortBy.DISTANCE // 거리순 렬
-        };
-
-        ps.keywordSearch(searchTerm, function(result, status) {
-            if (status === kakao.maps.services.Status.OK) {
-                // 현재 위치 마커 표시
-                const currentLocationMarker = new kakao.maps.Marker({
-                    map: map,
-                    position: new kakao.maps.LatLng(userLocation.lat, userLocation.lng),
-                    image: new kakao.maps.MarkerImage(
-                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-                        new kakao.maps.Size(24, 35)
-                    )
-                });
-                markers.push(currentLocationMarker);
-
-                // 검색 결과 표시
-                displayHospitals(result);
-                
-                // 지도 범위 재설정
-                const bounds = new kakao.maps.LatLngBounds();
-                bounds.extend(new kakao.maps.LatLng(userLocation.lat, userLocation.lng)); // 현재 위치 포함
-                result.forEach(place => {
-                    bounds.extend(new kakao.maps.LatLng(place.y, place.x));
-                });
-                map.setBounds(bounds);
-                
-                // 지도 섹션으로 스크롤
-                const mapSection = document.getElementById('map-section');
-                if (mapSection) {
-                    mapSection.scrollIntoView({ 
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            } else {
-                alert('검색 결과가 없습니다.');
-            }
-        }, searchOption);
-    }
-
-    // 초기 위치 정보 가져오기
-    getUserLocation().catch(error => {
-        console.error('초기 위치 정보 가져오기 실패:', error);
-    });
-
-    // 쿠키 설정 함수
-    function setCookie(name, value, days) {
-        let expires = "";
-        if (days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
-    }
-
-    // 카카오 로그인 관련 설정
-    Kakao.Auth.setAccessToken(localStorage.getItem('kakao_access_token'));
-
-    // 카카오맵 기화 함수
+    // 카카오맵 초기화 함수
     function initializeMap() {
         if (typeof kakao !== 'undefined' && kakao.maps) {
             const mapContainer = document.getElementById("map");
-            getUserLocation().then(location => {
-                const options = {
-                    center: new kakao.maps.LatLng(location.lat, location.lng),
-                    level: 5,
-                };
-                const map = new kakao.maps.Map(mapContainer, options);
-                
-                // 현재 위치 기반으로 병원 검색
-                const ps = new kakao.maps.services.Places();
-                ps.keywordSearch(
-                    "병원",
-                    function (data, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            displayHospitals(data);
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const locPosition = new kakao.maps.LatLng(lat, lon);
+                    
+                    const options = {
+                        center: locPosition,
+                        level: 5,
+                    };
+                    map = new kakao.maps.Map(mapContainer, options);
+                    
+                    const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png';
+                    const imageSize = new kakao.maps.Size(24, 35);
+                    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+                    currentLocationMarker = new kakao.maps.Marker({
+                        map: map,
+                        position: locPosition,
+                        image: markerImage
+                    });
+
+                    const currentLocationInfo = new kakao.maps.InfoWindow({
+                        content: '<div style="padding:5px;">현재 위치</div>'
+                    });
+                    currentLocationInfo.open(map, currentLocationMarker);
+
+                    const ps = new kakao.maps.services.Places();
+                    ps.keywordSearch(
+                        "병원",
+                        function (data, status) {
+                            if (status === kakao.maps.services.Status.OK) {
+                                displayHospitals(data);
+                            }
+                        },
+                        {
+                            location: locPosition,
+                            radius: 5000,
+                            sort: kakao.maps.services.SortBy.DISTANCE
                         }
-                    },
-                    {
-                        location: new kakao.maps.LatLng(location.lat, location.lng),
-                        radius: 5000,
-                        sort: kakao.maps.services.SortBy.DISTANCE
-                    }
-                );
-            }).catch(error => {
-                console.error('위치 정보 가져오기 실패:', error);
-                // 기본 위치 사용
-                const options = {
-                    center: new kakao.maps.LatLng(37.3170542, 127.0971706),
-                    level: 5,
-                };
-                const map = new kakao.maps.Map(mapContainer, options);
-            });
+                    );
+                });
+            } else {
+                alert("현재 위치를 불러올 수 없습니다.");
+            }
         } else {
             setTimeout(initializeMap, 100);
         }
