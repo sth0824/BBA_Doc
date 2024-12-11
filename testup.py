@@ -1,3 +1,24 @@
+# 출처: https://wikidocs.net/253106
+# 출처: https://github.com/topics/retrieval-augmented-generation
+# 출처: https://github.com/infiniflow/ragflow
+# 출처: https://github.com/HKUDS/LightRAG
+# 출처: https://github.com/weaviate/Verba
+# 출처: https://github.com/Andrew-Jang/RAGHub
+# 출처: https://github.com/WooilJeong/PyKakao
+# 출처: https://github.com/kakao/kakao_flutter_sdk
+# 출처: https://github.com/topics/kakao-api
+# 출처: https://github.com/HKUDS/LightRAG
+# 출처: https://tech.osci.kr/
+# 출처: https://faiiry9.tistory.com/146
+# 출처: https://rudaks.tistory.com
+# 출처: https://isaac-christian.tistory.com
+# 출처: https://blog.doctor-cha.com/auto-repair-shop-map-with-streamlit
+# 출처: https://naver.me/x5GLzYjX
+# 출처: https://www.youtube.com/watch?v=SDWaHCtBuTg
+# 출처: https://www.youtube.com/watch?v=FouUOftcn70
+# 출처: chat-gpt
+# 출처: copilot
+
 import os
 import sys
 import json
